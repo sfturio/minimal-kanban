@@ -365,16 +365,21 @@ function renderBoardsPanel() {
 
 function onBoardsListClick(event) {
   const target = event.target;
-  if (!(target instanceof HTMLElement)) {
+  if (!(target instanceof Element)) {
     return;
   }
 
-  const action = target.dataset.action;
+  const actionElement = target.closest("[data-action]");
+  if (!(actionElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const action = actionElement.dataset.action;
   if (!action) {
     return;
   }
 
-  const item = target.closest(".board-item");
+  const item = actionElement.closest(".board-item");
   const boardId = item?.dataset.id;
   if (!boardId) {
     return;

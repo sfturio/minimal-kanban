@@ -527,7 +527,7 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 
 .board-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.35rem;
   align-items: center;
 }
@@ -586,6 +586,7 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
   display: flex;
   justify-content: flex-end;
   gap: 0.3rem;
+  grid-column: 1 / -1;
 }
 
 .board-delete-confirm button {
