@@ -530,6 +530,13 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.35rem;
   align-items: center;
+  border-radius: 10px;
+  padding: 0.16rem;
+}
+
+.board-item.active-table {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+  outline: 1px solid color-mix(in srgb, var(--line-soft) 85%, var(--primary));
 }
 
 .board-item button {
@@ -550,6 +557,16 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
   font-weight: 600;
 }
 
+.board-item.active-table .board-select::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 85%, var(--text));
+}
+
 .board-actions {
   display: inline-flex;
   gap: 0.3rem;
@@ -558,6 +575,18 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 .board-actions button {
   padding: 0.35rem 0.42rem;
   font-size: 0.76rem;
+}
+
+.board-actions button[data-action="rename"]:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+}
+
+.board-actions button[data-action="delete"] {
+  color: #8a5858;
+}
+
+.board-actions button[data-action="delete"]:hover {
+  background: color-mix(in srgb, #8a5858 10%, var(--surface-low));
 }
 
 .board-edit-row {
@@ -632,6 +661,10 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 .boards-create button {
   cursor: pointer;
   color: color-mix(in srgb, var(--primary) 86%, var(--text));
+}
+
+.boards-create button:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
 }
 
 .ai-modal {

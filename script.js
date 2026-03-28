@@ -270,11 +270,7 @@ function closeBoardsPanel() {
 }
 
 function onBoardsOverlayClick(event) {
-  const target = event.target;
-  const clickedInsidePanel =
-    target instanceof Element && Boolean(target.closest(".boards-panel"));
-
-  if (!clickedInsidePanel) {
+  if (event.target === boardsOverlay) {
     closeBoardsPanel();
   }
 }
@@ -318,7 +314,7 @@ function renderBoardsPanel() {
 
   boards.forEach((board) => {
     const wrapper = document.createElement("div");
-    wrapper.className = "board-item";
+    wrapper.className = `board-item${board.id === activeBoardId ? " active-table" : ""}`;
     wrapper.dataset.id = board.id;
 
     const isActive = board.id === activeBoardId;
@@ -624,11 +620,7 @@ function closeAIPlanningModal() {
 }
 
 function onModalOverlayClick(event) {
-  const target = event.target;
-  const clickedInsideModal =
-    target instanceof Element && Boolean(target.closest(".ai-modal"));
-
-  if (!clickedInsideModal) {
+  if (event.target === aiModalOverlay) {
     closeAIPlanningModal();
   }
 }
