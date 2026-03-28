@@ -857,8 +857,20 @@ function createTaskElement(task) {
 
     if (action === "delete") {
       editingTaskId = null;
-      deleteConfirmTaskId = deleteConfirmTaskId === task.id ? null : task.id;
-      render();
+      const confirmBox = card.querySelector(".task-delete-confirm");
+      if (!(confirmBox instanceof HTMLElement)) {
+        return;
+      }
+
+      if (deleteConfirmTaskId === task.id) {
+        deleteConfirmTaskId = null;
+        confirmBox.classList.remove("show");
+        return;
+      }
+
+      closeAllTaskDeleteConfirms();
+      deleteConfirmTaskId = task.id;
+      confirmBox.classList.add("show");
       return;
     }
 
@@ -869,7 +881,10 @@ function createTaskElement(task) {
 
     if (action === "cancel-delete") {
       deleteConfirmTaskId = null;
-      render();
+      const confirmBox = card.querySelector(".task-delete-confirm");
+      if (confirmBox instanceof HTMLElement) {
+        confirmBox.classList.remove("show");
+      }
     }
   });
 
@@ -923,6 +938,12 @@ function deleteTask(taskId) {
   }
   saveTasks();
   render();
+}
+
+function closeAllTaskDeleteConfirms() {
+  document.querySelectorAll(".task-delete-confirm.show").forEach((element) => {
+    element.classList.remove("show");
+  });
 }
 
 function setupDropZones() {

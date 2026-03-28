@@ -227,7 +227,7 @@ body.dark .task-list.drag-over {
 }
 
 .task:hover {
-  background: var(--surface-card);
+  background: color-mix(in srgb, var(--surface-hover) 86%, var(--surface-card));
 }
 
 .task.dragging {
