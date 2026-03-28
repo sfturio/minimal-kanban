@@ -447,6 +447,12 @@ body.focus-mode .task-form {
   display: none;
 }
 
+body.focus-mode .topbar {
+  filter: blur(3px);
+  opacity: 0.72;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
 body.focus-mode .board {
   grid-template-columns: minmax(320px, 760px);
   justify-content: center;
