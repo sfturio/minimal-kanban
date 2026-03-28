@@ -141,6 +141,17 @@ body.dark {
   margin-bottom: 0.7rem;
 }
 
+.board-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.board-row.editing {
+  grid-template-columns: 1fr auto auto;
+}
+
 .board-item {
   width: 100%;
   text-align: left;
@@ -161,6 +172,75 @@ body.dark {
 .board-item.active {
   background: color-mix(in srgb, var(--primary) 16%, var(--surface-low));
   color: color-mix(in srgb, var(--text) 92%, var(--primary));
+}
+
+.board-action-btn {
+  border: none;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-low) 88%, var(--surface-card));
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  padding: 0.45rem 0.5rem;
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.board-action-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+}
+
+.board-action-btn.delete {
+  color: #8a5858;
+}
+
+.board-inline-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.6rem;
+}
+
+.board-inline-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.35rem;
+}
+
+.board-name-input {
+  border: none;
+  outline: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-low));
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.board-inline-btn {
+  border: none;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-low) 88%, var(--surface-card));
+  color: color-mix(in srgb, var(--primary) 88%, var(--text));
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.45rem 0.5rem;
+  cursor: pointer;
+}
+
+.board-inline-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+}
+
+.board-inline-btn.delete {
+  color: #8a5858;
+}
+
+.board-menu-message {
+  min-height: 1rem;
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  color: color-mix(in srgb, var(--text-muted) 86%, transparent);
 }
 
 .add-board-btn {
@@ -484,6 +564,14 @@ body.focus-mode .task.dragging {
 
 body.focus-mode .task-form {
   display: none;
+}
+
+body.focus-mode .topbar > div:first-child,
+body.focus-mode .topbar-actions {
+  filter: blur(3px);
+  opacity: 0.55;
+  pointer-events: none;
+  transition: filter 0.2s ease, opacity 0.2s ease;
 }
 
 body.focus-mode .board {
