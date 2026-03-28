@@ -1,412 +1,84 @@
-﻿const STORAGE_KEY = "kanban.tasks.v1";
+﻿const LEGACY_STORAGE_KEY = "kanban.tasks.v1";
+const TASKS_KEY_PREFIX = "kanban.tasks.board.v2.";
 const BOARDS_KEY = "kanban.boards.v1";
 const ACTIVE_BOARD_KEY = "kanban.active-board.v1";
 const THEME_KEY = "kanban.theme.v1";
 const FOCUS_KEY = "kanban.focus.v1";
 const COLUMNS = ["todo", "inprogress", "done"];
-const DEFAULT_BOARD_NAME = "Principal";
+const DEFAULT_BOARD_ID = "principal";
 
 let boards = loadBoards();
-let activeBoardId = loadActiveBoardId(boards);
-let tasks = loadTasks().map(normalizeTask);
+let activeBoardId = loadActiveBoardId();
+let tasks = loadTasksForBoard(activeBoardId).map(normalizeTask);
 let draggingTaskId = null;
-let draggedFromColumn = null;
-
-ensureTaskOrders();
-saveTasks();
+let dragOverListId = null;
+let editingTaskId = null;
+let deleteConfirmTaskId = null;
+let editingBoardId = null;
+let deleteConfirmBoardId = null;
+let clearConfirmColumn = null;
 
 const form = document.getElementById("task-form");
 const titleInput = document.getElementById("task-title");
 const descriptionInput = document.getElementById("task-description");
+const boardName = document.getElementById("board-name");
+
+const boardToggleButton = document.getElementById("board-toggle");
+const boardsOverlay = document.getElementById("boards-overlay");
+const boardsCloseButton = document.getElementById("boards-close");
+const boardsList = document.getElementById("boards-list");
+const newBoardInput = document.getElementById("new-board-input");
+const createBoardButton = document.getElementById("create-board-btn");
+
+const iaGenerateButton = document.getElementById("ia-generate-btn");
+const aiModalOverlay = document.getElementById("ai-modal-overlay");
+const aiPlanInput = document.getElementById("ai-plan-input");
+const aiCancelButton = document.getElementById("ai-cancel-btn");
+const aiGenerateConfirmButton = document.getElementById("ai-generate-confirm-btn");
+const aiCloseButton = document.getElementById("ai-close-btn");
+
 const themeToggleButton = document.getElementById("theme-toggle");
 const themeIcon = document.getElementById("theme-icon");
 const focusToggleButton = document.getElementById("focus-toggle");
 const focusLabel = document.getElementById("focus-label");
-const boardMenuToggle = document.getElementById("board-menu-toggle");
-const boardMenuOverlay = document.getElementById("board-menu-overlay");
-const boardList = document.getElementById("board-list");
-const boardInlineSlot = document.getElementById("board-inline-slot");
-const boardMenuMessage = document.getElementById("board-menu-message");
-const addBoardButton = document.getElementById("add-board-btn");
-const currentBoardName = document.getElementById("current-board-name");
-const closeBoardMenuButton = document.getElementById("close-board-menu-btn");
-let creatingBoard = false;
-let editingBoardId = null;
-let deletingBoardId = null;
+const clearColumnButtons = document.querySelectorAll('[data-action="clear-column"]');
 
 form.addEventListener("submit", onCreateTask);
+iaGenerateButton?.addEventListener("click", openAIPlanningModal);
+aiCancelButton?.addEventListener("click", closeAIPlanningModal);
+aiGenerateConfirmButton?.addEventListener("click", onGenerateIATasks);
+aiCloseButton?.addEventListener("click", closeAIPlanningModal);
+aiModalOverlay?.addEventListener("click", onModalOverlayClick);
+
+boardToggleButton?.addEventListener("click", toggleBoardsPanel);
+boardsCloseButton?.addEventListener("click", closeBoardsPanel);
+boardsOverlay?.addEventListener("click", onBoardsOverlayClick);
+createBoardButton?.addEventListener("click", onCreateBoard);
+newBoardInput?.addEventListener("keydown", onNewBoardInputKeydown);
+
+boardsList?.addEventListener("click", onBoardsListClick);
+boardsList?.addEventListener("keydown", onBoardsListKeydown);
+
+document.addEventListener("keydown", onGlobalKeydown);
+document.addEventListener("visibilitychange", onVisibilityChange);
+
 themeToggleButton?.addEventListener("click", toggleTheme);
 focusToggleButton?.addEventListener("click", toggleFocusMode);
-boardMenuToggle?.addEventListener("click", toggleBoardMenu);
-addBoardButton?.addEventListener("click", startCreateBoard);
-closeBoardMenuButton?.addEventListener("click", closeBoardMenu);
-
-boardMenuOverlay?.addEventListener("click", (event) => {
-  if (!event.target.closest(".board-menu")) {
-    closeBoardMenu();
-  }
-});
-
-document.addEventListener("keydown", (event) => {
-  if ((event.key === "Escape" || event.key === "Esc") && boardMenuOverlay && !boardMenuOverlay.hasAttribute("hidden")) {
-    closeBoardMenu();
-  }
+clearColumnButtons.forEach((button) => {
+  button.addEventListener("click", onClearColumnClick);
 });
 
 initTheme();
 initFocusMode();
 setupDropZones();
+updateBoardName();
+renderBoardsPanel();
+updateClearColumnButtons();
 render();
-renderBoardMenu();
-updateCurrentBoardName();
-
-function loadBoards() {
-  try {
-    const raw = localStorage.getItem(BOARDS_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return [createBoard(DEFAULT_BOARD_NAME)];
-    }
-
-    const sanitized = parsed
-      .filter((board) => board && typeof board.id === "string" && typeof board.name === "string")
-      .map((board) => ({ id: board.id, name: board.name.trim() || DEFAULT_BOARD_NAME }));
-
-    return sanitized.length ? sanitized : [createBoard(DEFAULT_BOARD_NAME)];
-  } catch {
-    return [createBoard(DEFAULT_BOARD_NAME)];
-  }
-}
-
-function loadActiveBoardId(boardItems) {
-  const stored = localStorage.getItem(ACTIVE_BOARD_KEY);
-  if (stored && boardItems.some((board) => board.id === stored)) {
-    return stored;
-  }
-  return boardItems[0].id;
-}
-
-function saveBoards() {
-  localStorage.setItem(BOARDS_KEY, JSON.stringify(boards));
-  localStorage.setItem(ACTIVE_BOARD_KEY, activeBoardId);
-}
-
-function createBoard(name) {
-  return {
-    id: crypto.randomUUID(),
-    name: (name || DEFAULT_BOARD_NAME).trim(),
-  };
-}
-
-function toggleBoardMenu() {
-  if (!boardMenuOverlay) {
-    return;
-  }
-
-  const shouldOpen = boardMenuOverlay.hasAttribute("hidden");
-  if (shouldOpen) {
-    openBoardMenu();
-  } else {
-    closeBoardMenu();
-  }
-}
-
-function openBoardMenu() {
-  if (!boardMenuOverlay) {
-    return;
-  }
-
-  renderBoardMenu();
-  boardMenuOverlay.hidden = false;
-}
-
-function closeBoardMenu() {
-  if (!boardMenuOverlay) {
-    return;
-  }
-
-  boardMenuOverlay.hidden = true;
-}
-
-function renderBoardMenu() {
-  if (!boardList) {
-    return;
-  }
-
-  boardList.innerHTML = "";
-
-  boards.forEach((board) => {
-    const row = document.createElement("div");
-    row.className = "board-row";
-
-    if (editingBoardId === board.id) {
-      row.classList.add("editing");
-      row.appendChild(buildBoardEditRow(board));
-    } else if (deletingBoardId === board.id) {
-      row.appendChild(buildBoardDeleteRow(board));
-    } else {
-      const selectButton = document.createElement("button");
-      selectButton.type = "button";
-      selectButton.className = `board-item${board.id === activeBoardId ? " active" : ""}`;
-      selectButton.textContent = board.name;
-      selectButton.addEventListener("click", () => {
-        activeBoardId = board.id;
-        saveBoards();
-        updateCurrentBoardName();
-        render();
-        renderBoardMenu();
-        closeBoardMenu();
-      });
-
-      const renameButton = document.createElement("button");
-      renameButton.type = "button";
-      renameButton.className = "board-action-btn";
-      renameButton.textContent = "Rename";
-      renameButton.addEventListener("click", () => startRenameBoard(board.id));
-
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.className = "board-action-btn delete";
-      deleteButton.textContent = "Delete";
-      deleteButton.addEventListener("click", () => startDeleteBoard(board.id));
-
-      row.appendChild(selectButton);
-      row.appendChild(renameButton);
-      row.appendChild(deleteButton);
-    }
-
-    boardList.appendChild(row);
-  });
-
-  renderBoardInlineSlot();
-}
-
-function buildBoardEditRow(board) {
-  const wrap = document.createElement("div");
-  wrap.className = "board-inline-row";
-
-  const input = document.createElement("input");
-  input.className = "board-name-input";
-  input.maxLength = 64;
-  input.value = board.name;
-
-  const saveBtn = document.createElement("button");
-  saveBtn.type = "button";
-  saveBtn.className = "board-inline-btn";
-  saveBtn.textContent = "Save";
-  saveBtn.addEventListener("click", () => commitRenameBoard(board.id, input.value));
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "board-inline-btn";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", cancelBoardActionState);
-
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      commitRenameBoard(board.id, input.value);
-    }
-    if (event.key === "Escape") {
-      event.preventDefault();
-      cancelBoardActionState();
-    }
-  });
-
-  wrap.appendChild(input);
-  wrap.appendChild(saveBtn);
-  wrap.appendChild(cancelBtn);
-  return wrap;
-}
-
-function buildBoardDeleteRow(board) {
-  const wrap = document.createElement("div");
-  wrap.className = "board-inline-row";
-
-  const label = document.createElement("input");
-  label.className = "board-name-input";
-  label.value = `Delete \"${board.name}\"?`;
-  label.readOnly = true;
-
-  const confirmBtn = document.createElement("button");
-  confirmBtn.type = "button";
-  confirmBtn.className = "board-inline-btn delete";
-  confirmBtn.textContent = "Confirm";
-  confirmBtn.addEventListener("click", () => commitDeleteBoard(board.id));
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "board-inline-btn";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", cancelBoardActionState);
-
-  wrap.appendChild(label);
-  wrap.appendChild(confirmBtn);
-  wrap.appendChild(cancelBtn);
-  return wrap;
-}
-
-function renderBoardInlineSlot() {
-  if (!boardInlineSlot) {
-    return;
-  }
-
-  boardInlineSlot.innerHTML = "";
-
-  if (!creatingBoard) {
-    return;
-  }
-
-  const row = document.createElement("div");
-  row.className = "board-inline-row";
-
-  const input = document.createElement("input");
-  input.className = "board-name-input";
-  input.maxLength = 64;
-  input.placeholder = "Nome da board";
-  input.value = "";
-
-  const createBtn = document.createElement("button");
-  createBtn.type = "button";
-  createBtn.className = "board-inline-btn";
-  createBtn.textContent = "Create";
-  createBtn.addEventListener("click", () => commitCreateBoard(input.value));
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "board-inline-btn";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", cancelBoardActionState);
-
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      commitCreateBoard(input.value);
-    }
-    if (event.key === "Escape") {
-      event.preventDefault();
-      cancelBoardActionState();
-    }
-  });
-
-  row.appendChild(input);
-  row.appendChild(createBtn);
-  row.appendChild(cancelBtn);
-  boardInlineSlot.appendChild(row);
-  input.focus();
-}
-
-function startCreateBoard() {
-  creatingBoard = true;
-  editingBoardId = null;
-  deletingBoardId = null;
-  setBoardMenuMessage("");
-  renderBoardMenu();
-}
-
-function startRenameBoard(boardId) {
-  creatingBoard = false;
-  deletingBoardId = null;
-  editingBoardId = boardId;
-  setBoardMenuMessage("");
-  renderBoardMenu();
-}
-
-function startDeleteBoard(boardId) {
-  if (boards.length <= 1) {
-    setBoardMenuMessage("Você precisa manter pelo menos uma board.");
-    return;
-  }
-
-  creatingBoard = false;
-  editingBoardId = null;
-  deletingBoardId = boardId;
-  setBoardMenuMessage("");
-  renderBoardMenu();
-}
-
-function commitCreateBoard(nextName) {
-  const name = (nextName || "").trim();
-  if (!name) {
-    setBoardMenuMessage("Digite um nome para criar a board.");
-    return;
-  }
-
-  const board = createBoard(name);
-  boards.push(board);
-  activeBoardId = board.id;
-  saveBoards();
-  updateCurrentBoardName();
-  render();
-  cancelBoardActionState();
-}
-
-function commitRenameBoard(boardId, nextName) {
-  const board = boards.find((item) => item.id === boardId);
-  if (!board) {
-    return;
-  }
-
-  const name = (nextName || "").trim();
-  if (!name) {
-    setBoardMenuMessage("Nome inválido.");
-    return;
-  }
-
-  board.name = name;
-  saveBoards();
-  updateCurrentBoardName();
-  cancelBoardActionState();
-}
-
-function commitDeleteBoard(boardId) {
-  if (boards.length <= 1) {
-    setBoardMenuMessage("Você precisa manter pelo menos uma board.");
-    return;
-  }
-
-  boards = boards.filter((item) => item.id !== boardId);
-  tasks = tasks.filter((task) => task.boardId !== boardId);
-
-  if (activeBoardId === boardId) {
-    activeBoardId = boards[0].id;
-  }
-
-  saveBoards();
-  saveTasks();
-  updateCurrentBoardName();
-  render();
-  cancelBoardActionState();
-}
-
-function cancelBoardActionState() {
-  creatingBoard = false;
-  editingBoardId = null;
-  deletingBoardId = null;
-  setBoardMenuMessage("");
-  renderBoardMenu();
-}
-
-function setBoardMenuMessage(message) {
-  if (!boardMenuMessage) {
-    return;
-  }
-  boardMenuMessage.textContent = message || "";
-}
-
-function updateCurrentBoardName() {
-  if (!currentBoardName) {
-    return;
-  }
-
-  const board = boards.find((item) => item.id === activeBoardId);
-  currentBoardName.textContent = board ? board.name : DEFAULT_BOARD_NAME;
-}
 
 function initTheme() {
   const stored = localStorage.getItem(THEME_KEY);
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = stored || (prefersDark ? "dark" : "light");
+  const theme = stored || "dark";
   applyTheme(theme);
 }
 
@@ -450,6 +122,7 @@ function applyFocusMode(on) {
       "aria-label",
       on ? "Desativar modo foco" : "Ativar modo foco",
     );
+
     if (on) {
       focusToggleButton.classList.remove("pulse");
       void focusToggleButton.offsetWidth;
@@ -462,59 +135,380 @@ function applyFocusMode(on) {
   }
 }
 
-function loadTasks() {
+function loadBoards() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(BOARDS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const list = Array.isArray(parsed) ? parsed : [];
+
+    const normalized = list
+      .map((item) => ({
+        id: String(item.id || "").trim(),
+        name: String(item.name || "").trim(),
+      }))
+      .filter((item) => item.id && item.name);
+
+    if (normalized.length === 0) {
+      return [{ id: DEFAULT_BOARD_ID, name: "Principal" }];
+    }
+
+    return normalized;
+  } catch {
+    return [{ id: DEFAULT_BOARD_ID, name: "Principal" }];
+  }
+}
+
+function saveBoards() {
+  localStorage.setItem(BOARDS_KEY, JSON.stringify(boards));
+}
+
+function loadActiveBoardId() {
+  const stored = localStorage.getItem(ACTIVE_BOARD_KEY);
+  const valid = boards.find((board) => board.id === stored);
+  const active = valid ? valid.id : boards[0].id;
+  localStorage.setItem(ACTIVE_BOARD_KEY, active);
+  return active;
+}
+
+function setActiveBoardId(boardId) {
+  activeBoardId = boardId;
+  localStorage.setItem(ACTIVE_BOARD_KEY, boardId);
+}
+
+function taskStorageKey(boardId) {
+  return `${TASKS_KEY_PREFIX}${boardId}`;
+}
+
+function loadTasksForBoard(boardId) {
+  try {
+    const key = taskStorageKey(boardId);
+    const raw = localStorage.getItem(key);
+
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+
+    if (boardId === DEFAULT_BOARD_ID) {
+      const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacyRaw) {
+        const legacyParsed = JSON.parse(legacyRaw);
+        const legacyTasks = Array.isArray(legacyParsed) ? legacyParsed : [];
+        localStorage.setItem(key, JSON.stringify(legacyTasks));
+        return legacyTasks;
+      }
+    }
+
+    return [];
   } catch {
     return [];
   }
 }
 
-function normalizeTask(task) {
-  const description = (task.description || "").trim();
-  const rawCategory = (task.category || "").trim();
-  const categoryFromDescription = description ? inferCategory(description) : "";
-  const category =
-    rawCategory && rawCategory.toLowerCase() !== "geral"
-      ? rawCategory
-      : categoryFromDescription;
+function saveTasks() {
+  localStorage.setItem(taskStorageKey(activeBoardId), JSON.stringify(tasks));
+}
 
+function normalizeTask(task) {
   return {
-    ...task,
-    boardId: task.boardId || activeBoardId,
-    order: Number.isFinite(task.order) ? task.order : null,
-    category,
+    id: task.id || crypto.randomUUID(),
+    title: String(task.title || "").trim(),
+    description: String(task.description || ""),
+    category: String(task.category || inferCategory(task.description || "")).trim(),
+    status: COLUMNS.includes(task.status) ? task.status : "todo",
   };
 }
 
-function ensureTaskOrders() {
-  const grouped = new Map();
+function updateBoardName() {
+  const active = boards.find((board) => board.id === activeBoardId);
+  if (boardName) {
+    boardName.textContent = active ? active.name : "Principal";
+  }
+}
 
-  tasks.forEach((task) => {
-    const key = `${task.boardId}|${task.status}`;
-    if (!grouped.has(key)) {
-      grouped.set(key, []);
+function toggleBoardsPanel() {
+  if (!boardsOverlay) {
+    return;
+  }
+
+  if (boardsOverlay.hidden) {
+    openBoardsPanel();
+  } else {
+    closeBoardsPanel();
+  }
+}
+
+function openBoardsPanel() {
+  if (!boardsOverlay) {
+    return;
+  }
+
+  renderBoardsPanel();
+  boardsOverlay.hidden = false;
+
+  if (boardToggleButton) {
+    boardToggleButton.setAttribute("aria-expanded", "true");
+  }
+
+  updatePageLock();
+}
+
+function closeBoardsPanel() {
+  if (!boardsOverlay) {
+    return;
+  }
+
+  boardsOverlay.hidden = true;
+  editingBoardId = null;
+  deleteConfirmBoardId = null;
+
+  if (boardToggleButton) {
+    boardToggleButton.setAttribute("aria-expanded", "false");
+  }
+
+  updatePageLock();
+}
+
+function onBoardsOverlayClick(event) {
+  if (event.target === boardsOverlay) {
+    closeBoardsPanel();
+  }
+}
+
+function onCreateBoard() {
+  const name = (newBoardInput?.value || "").trim();
+  if (!name) {
+    newBoardInput?.focus();
+    return;
+  }
+
+  const board = {
+    id: crypto.randomUUID(),
+    name,
+  };
+
+  boards.push(board);
+  saveBoards();
+
+  if (newBoardInput) {
+    newBoardInput.value = "";
+  }
+
+  switchBoard(board.id);
+  openBoardsPanel();
+}
+
+function onNewBoardInputKeydown(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    onCreateBoard();
+  }
+}
+
+function renderBoardsPanel() {
+  if (!boardsList) {
+    return;
+  }
+
+  boardsList.innerHTML = "";
+
+  boards.forEach((board) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = `board-item${board.id === activeBoardId ? " active-table" : ""}`;
+    wrapper.dataset.id = board.id;
+
+    const isActive = board.id === activeBoardId;
+    const isEditing = board.id === editingBoardId;
+    const isDeleteConfirm = board.id === deleteConfirmBoardId;
+
+    if (isEditing) {
+      wrapper.innerHTML = `
+        <div class="board-edit-row">
+          <input type="text" class="board-edit-input" value="${escapeHtml(board.name)}" maxlength="60" />
+          <button type="button" data-action="confirm-rename">Salvar</button>
+          <button type="button" data-action="cancel-rename">Cancelar</button>
+        </div>
+      `;
+    } else {
+      wrapper.innerHTML = `
+        <button type="button" class="board-select${isActive ? " active" : ""}" data-action="select">${escapeHtml(board.name)}</button>
+        <div class="board-actions">
+          <button type="button" data-action="rename">Renomear</button>
+          <button type="button" data-action="delete">Excluir</button>
+        </div>
+      `;
     }
-    grouped.get(key).push(task);
-  });
 
-  grouped.forEach((items) => {
-    items.sort((a, b) => {
-      const ao = Number.isFinite(a.order) ? a.order : Number.MAX_SAFE_INTEGER;
-      const bo = Number.isFinite(b.order) ? b.order : Number.MAX_SAFE_INTEGER;
-      return ao - bo;
-    });
+    if (isDeleteConfirm) {
+      const confirm = document.createElement("div");
+      confirm.className = "board-delete-confirm";
+      confirm.innerHTML = `
+        <button type="button" class="danger" data-action="confirm-delete-board">Confirmar</button>
+        <button type="button" data-action="cancel-delete-board">Cancelar</button>
+      `;
+      wrapper.appendChild(confirm);
+    }
 
-    items.forEach((item, index) => {
-      item.order = index + 1;
-    });
+    boardsList.appendChild(wrapper);
+
+    if (isEditing) {
+      const input = wrapper.querySelector(".board-edit-input");
+      input?.focus();
+      input?.select();
+    }
   });
 }
 
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+function onBoardsListClick(event) {
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  const actionElement = target.closest("[data-action]");
+  if (!(actionElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const action = actionElement.dataset.action;
+  if (!action) {
+    return;
+  }
+
+  const item = actionElement.closest(".board-item");
+  const boardId = item?.dataset.id;
+  if (!boardId) {
+    return;
+  }
+
+  if (action === "select") {
+    switchBoard(boardId);
+    closeBoardsPanel();
+    return;
+  }
+
+  if (action === "rename") {
+    deleteConfirmBoardId = null;
+    editingBoardId = boardId;
+    renderBoardsPanel();
+    return;
+  }
+
+  if (action === "cancel-rename") {
+    editingBoardId = null;
+    renderBoardsPanel();
+    return;
+  }
+
+  if (action === "confirm-rename") {
+    const input = item.querySelector(".board-edit-input");
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const nextName = input.value.trim();
+    if (!nextName) {
+      input.focus();
+      return;
+    }
+
+    const board = boards.find((entry) => entry.id === boardId);
+    if (!board) {
+      return;
+    }
+
+    board.name = nextName;
+    editingBoardId = null;
+    saveBoards();
+    updateBoardName();
+    renderBoardsPanel();
+    return;
+  }
+
+  if (action === "delete") {
+    if (boards.length <= 1) {
+      return;
+    }
+
+    editingBoardId = null;
+    deleteConfirmBoardId = deleteConfirmBoardId === boardId ? null : boardId;
+    renderBoardsPanel();
+    return;
+  }
+
+  if (action === "cancel-delete-board") {
+    deleteConfirmBoardId = null;
+    renderBoardsPanel();
+    return;
+  }
+
+  if (action === "confirm-delete-board") {
+    deleteBoard(boardId);
+  }
+}
+
+function onBoardsListKeydown(event) {
+  if (event.key !== "Enter") {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  if (target.classList.contains("board-edit-input")) {
+    event.preventDefault();
+    const row = target.closest(".board-item");
+    const confirmButton = row?.querySelector('[data-action="confirm-rename"]');
+    confirmButton?.click();
+  }
+}
+
+function deleteBoard(boardId) {
+  if (boards.length <= 1) {
+    return;
+  }
+
+  const deletingActive = boardId === activeBoardId;
+  boards = boards.filter((board) => board.id !== boardId);
+  saveBoards();
+
+  localStorage.removeItem(taskStorageKey(boardId));
+
+  if (deletingActive) {
+    const fallback = boards[0];
+    switchBoard(fallback.id, { persistCurrentBoard: false });
+  } else {
+    renderBoardsPanel();
+  }
+
+  deleteConfirmBoardId = null;
+  editingBoardId = null;
+  renderBoardsPanel();
+}
+
+function switchBoard(boardId, options = {}) {
+  const { persistCurrentBoard = true } = options;
+
+  if (boardId === activeBoardId) {
+    updateBoardName();
+    renderBoardsPanel();
+    return;
+  }
+
+  if (persistCurrentBoard) {
+    saveTasks();
+  }
+
+  setActiveBoardId(boardId);
+  tasks = loadTasksForBoard(boardId).map(normalizeTask);
+  editingTaskId = null;
+  deleteConfirmTaskId = null;
+
+  updateBoardName();
+  renderBoardsPanel();
+  render();
 }
 
 function onCreateTask(event) {
@@ -530,12 +524,10 @@ function onCreateTask(event) {
 
   tasks.push({
     id: crypto.randomUUID(),
-    boardId: activeBoardId,
     title,
     description,
-    category: description ? inferCategory(description) : "",
+    category: inferCategory(description),
     status: "todo",
-    order: getNextOrder(activeBoardId, "todo"),
   });
 
   form.reset();
@@ -544,58 +536,199 @@ function onCreateTask(event) {
   render();
 }
 
+function onGenerateIATasks() {
+  const text = aiPlanInput?.value.trim() || "";
+  const planText = text || getExamplePlanInput();
+
+  const generatedCount = gerarTasksIA(planText);
+  if (generatedCount === 0) {
+    return;
+  }
+
+  if (aiPlanInput) {
+    aiPlanInput.value = "";
+  }
+
+  closeAIPlanningModal();
+}
+
+function getExamplePlanInput() {
+  return "revisar e-mails (manhã) ; treino de peito (academia) ; estudar JavaScript (noite)";
+}
+
+function gerarTasksIA(text) {
+  const plannedTitles = text
+    .split(";")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (plannedTitles.length === 0) {
+    return 0;
+  }
+
+  const plannedTasks = plannedTitles
+    .map(parsePlannedTask)
+    .filter((task) => task.title.length > 0)
+    .map((task) => ({
+      id: crypto.randomUUID(),
+      title: task.title,
+      description: task.category,
+      category: task.category,
+      status: "todo",
+    }));
+
+  tasks = [...plannedTasks, ...tasks];
+  saveTasks();
+  render();
+
+  console.log("Planejando com IA:", plannedTitles);
+  return plannedTasks.length;
+}
+
+function parsePlannedTask(rawText) {
+  const input = String(rawText || "").trim();
+  const match = input.match(/^(.*)\s+\(([^)]+)\)\s*$/);
+
+  if (!match) {
+    return {
+      title: input,
+      category: "",
+    };
+  }
+
+  const title = match[1].trim();
+  const category = match[2].trim();
+
+  return {
+    title,
+    category,
+  };
+}
+
+function openAIPlanningModal() {
+  if (!aiModalOverlay) {
+    return;
+  }
+
+  aiModalOverlay.hidden = false;
+  updatePageLock();
+  aiPlanInput?.focus();
+}
+
+function closeAIPlanningModal() {
+  if (aiModalOverlay) {
+    aiModalOverlay.hidden = true;
+  }
+
+  updatePageLock();
+}
+
+function onModalOverlayClick(event) {
+  if (event.target === aiModalOverlay) {
+    closeAIPlanningModal();
+  }
+}
+
+function onGlobalKeydown(event) {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  if (aiModalOverlay && !aiModalOverlay.hidden) {
+    closeAIPlanningModal();
+    return;
+  }
+
+  if (boardsOverlay && !boardsOverlay.hidden) {
+    closeBoardsPanel();
+    return;
+  }
+
+  if (clearConfirmColumn) {
+    clearConfirmColumn = null;
+    updateClearColumnButtons();
+  }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === "visible") {
+    return;
+  }
+
+  closeAIPlanningModal();
+  closeBoardsPanel();
+  clearConfirmColumn = null;
+  updateClearColumnButtons();
+}
+
+function updatePageLock() {
+  const aiOpen = aiModalOverlay && !aiModalOverlay.hidden;
+  const boardsOpen = boardsOverlay && !boardsOverlay.hidden;
+  document.body.style.overflow = aiOpen || boardsOpen ? "hidden" : "";
+}
+
 function inferCategory(description) {
-  return description.slice(0, 16).trim();
+  const value = String(description || "").trim();
+  return value;
 }
 
-function getColumnTasks(boardId, status) {
-  return tasks
-    .filter((task) => task.boardId === boardId && task.status === status)
-    .sort((a, b) => a.order - b.order);
+function onClearColumnClick(event) {
+  const target = event.currentTarget;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const column = target.dataset.column;
+  if (!COLUMNS.includes(column)) {
+    return;
+  }
+
+  if (clearConfirmColumn === column) {
+    clearConfirmColumn = null;
+    clearColumnTasks(column);
+    updateClearColumnButtons();
+    return;
+  }
+
+  clearConfirmColumn = column;
+  updateClearColumnButtons();
 }
 
-function getNextOrder(boardId, status) {
-  const columnTasks = getColumnTasks(boardId, status);
-  return columnTasks.length ? columnTasks[columnTasks.length - 1].order + 1 : 1;
+function clearColumnTasks(column) {
+  const previousCount = tasks.length;
+  tasks = tasks.filter((task) => task.status !== column);
+
+  if (tasks.length === previousCount) {
+    return;
+  }
+
+  editingTaskId = null;
+  deleteConfirmTaskId = null;
+  saveTasks();
+  render();
 }
 
-function renormalizeColumnOrders(boardId, status) {
-  const columnTasks = getColumnTasks(boardId, status);
-  columnTasks.forEach((task, index) => {
-    task.order = index + 1;
+function updateClearColumnButtons() {
+  clearColumnButtons.forEach((button) => {
+    const column = button.dataset.column;
+    const isConfirming = clearConfirmColumn === column;
+    button.classList.toggle("confirming", isConfirming);
+    button.textContent = isConfirming ? "Confirmar" : "Limpar";
   });
-}
-
-function applyColumnOrderByIds(boardId, status, orderedIds) {
-  const columnTasks = getColumnTasks(boardId, status);
-  const byId = new Map(columnTasks.map((task) => [task.id, task]));
-  let order = 1;
-
-  orderedIds.forEach((id) => {
-    const task = byId.get(id);
-    if (task) {
-      task.order = order;
-      order += 1;
-      byId.delete(id);
-    }
-  });
-
-  Array.from(byId.values())
-    .sort((a, b) => a.order - b.order)
-    .forEach((task) => {
-      task.order = order;
-      order += 1;
-    });
 }
 
 function render() {
   COLUMNS.forEach((column) => {
     const list = document.getElementById(`${column}-list`);
+    if (!list) {
+      return;
+    }
+
     list.innerHTML = "";
 
-    getColumnTasks(activeBoardId, column).forEach((task) => {
-      list.appendChild(createTaskElement(task));
-    });
+    tasks
+      .filter((task) => task.status === column)
+      .forEach((task) => list.appendChild(createTaskElement(task)));
   });
 }
 
@@ -605,59 +738,52 @@ function createTaskElement(task) {
   card.draggable = true;
   card.dataset.id = task.id;
 
+  const isEditing = editingTaskId === task.id;
+  const isDeleteConfirming = deleteConfirmTaskId === task.id;
+
   card.innerHTML = `
-    <p class="task-title"></p>
-    <div class="rename-row">
-      <input class="rename-input" type="text" maxlength="120" />
-      <button type="button" class="confirm-rename" data-action="confirm-rename">Rename</button>
-    </div>
-    <span class="task-category"></span>
+    <div class="task-main"></div>
     <div class="task-actions">
       <button type="button" data-action="left">←</button>
       <button type="button" data-action="right">→</button>
-      <button type="button" class="delete" data-action="delete">Delete</button>
-      <button type="button" class="confirm-delete-btn" data-action="confirm-delete">Confirm</button>
-      <button type="button" class="cancel-delete-btn" data-action="cancel-delete">Cancel</button>
+      <button type="button" data-action="edit">Renomear</button>
+      <button type="button" class="delete" data-action="delete">Excluir</button>
+    </div>
+    <div class="task-delete-confirm${isDeleteConfirming ? " show" : ""}">
+      <span>Excluir tarefa?</span>
+      <button type="button" class="danger" data-action="confirm-delete">Confirmar</button>
+      <button type="button" data-action="cancel-delete">Cancelar</button>
     </div>
   `;
 
-  card.querySelector(".task-title").textContent = task.title;
-  const titleEl = card.querySelector(".task-title");
-  const renameInput = card.querySelector(".rename-input");
-  renameInput.value = task.title;
+  const main = card.querySelector(".task-main");
+  if (isEditing) {
+    main.innerHTML = `
+      <div class="task-edit-row">
+        <input type="text" class="task-edit-input" value="${escapeHtml(task.title)}" maxlength="120" />
+        <button type="button" data-action="confirm-edit">Salvar</button>
+        <button type="button" data-action="cancel-edit">Cancelar</button>
+      </div>
+    `;
+  } else {
+    main.innerHTML = `
+      <button type="button" class="task-title-btn" data-action="edit" aria-label="Renomear tarefa">
+        <p class="task-title"></p>
+      </button>
+    `;
 
-  titleEl.addEventListener("click", () => {
-    card.classList.remove("confirm-delete");
-    card.classList.add("renaming");
-    renameInput.value = task.title;
-    renameInput.focus();
-    renameInput.select();
-  });
-
-  renameInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      renameTask(task.id, renameInput.value, card);
+    if (task.category) {
+      const category = document.createElement("span");
+      category.className = "task-category";
+      category.textContent = task.category;
+      main.appendChild(category);
     }
-    if (event.key === "Escape") {
-      event.preventDefault();
-      card.classList.remove("renaming");
-      renameInput.value = task.title;
-    }
-  });
+  }
 
-  renameInput.addEventListener("blur", () => {
-    setTimeout(() => {
-      if (!card.contains(document.activeElement)) {
-        card.classList.remove("renaming");
-        renameInput.value = task.title;
-      }
-    }, 0);
-  });
-
-  const categoryEl = card.querySelector(".task-category");
-  categoryEl.textContent = task.category || "";
-  categoryEl.style.display = task.category ? "inline-block" : "none";
+  const title = card.querySelector(".task-title");
+  if (title) {
+    title.textContent = task.title;
+  }
 
   const leftButton = card.querySelector('[data-action="left"]');
   const rightButton = card.querySelector('[data-action="right"]');
@@ -666,14 +792,85 @@ function createTaskElement(task) {
   rightButton.disabled = task.status === "done";
 
   card.addEventListener("click", (event) => {
-    const action = event.target.dataset.action;
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const action = target.dataset.action;
     if (!action) {
       return;
     }
 
+    if (action === "left") {
+      moveTask(task.id, -1);
+      return;
+    }
+
+    if (action === "right") {
+      moveTask(task.id, 1);
+      return;
+    }
+
+    if (action === "edit") {
+      deleteConfirmTaskId = null;
+      editingTaskId = task.id;
+      render();
+      requestAnimationFrame(() => {
+        const activeCard = document.querySelector(`.task[data-id="${task.id}"]`);
+        const editInput = activeCard?.querySelector(".task-edit-input");
+        editInput?.focus();
+        editInput?.select();
+      });
+      return;
+    }
+
+    if (action === "confirm-edit") {
+      const input = card.querySelector(".task-edit-input");
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+
+      const nextTitle = input.value.trim();
+      if (!nextTitle) {
+        input.focus();
+        return;
+      }
+
+      const selectedTask = tasks.find((item) => item.id === task.id);
+      if (!selectedTask) {
+        return;
+      }
+
+      selectedTask.title = nextTitle;
+      editingTaskId = null;
+      saveTasks();
+      render();
+      return;
+    }
+
+    if (action === "cancel-edit") {
+      editingTaskId = null;
+      render();
+      return;
+    }
+
     if (action === "delete") {
-      card.classList.remove("renaming");
-      card.classList.add("confirm-delete");
+      editingTaskId = null;
+      const confirmBox = card.querySelector(".task-delete-confirm");
+      if (!(confirmBox instanceof HTMLElement)) {
+        return;
+      }
+
+      if (deleteConfirmTaskId === task.id) {
+        deleteConfirmTaskId = null;
+        confirmBox.classList.remove("show");
+        return;
+      }
+
+      closeAllTaskDeleteConfirms();
+      deleteConfirmTaskId = task.id;
+      confirmBox.classList.add("show");
       return;
     }
 
@@ -683,64 +880,32 @@ function createTaskElement(task) {
     }
 
     if (action === "cancel-delete") {
-      card.classList.remove("confirm-delete");
-      return;
-    }
-
-    if (action === "left") {
-      card.classList.remove("confirm-delete");
-      moveTask(task.id, -1);
-      return;
-    }
-
-    if (action === "right") {
-      card.classList.remove("confirm-delete");
-      moveTask(task.id, 1);
-      return;
-    }
-
-    if (action === "confirm-rename") {
-      card.classList.remove("confirm-delete");
-      renameTask(task.id, renameInput.value, card);
+      deleteConfirmTaskId = null;
+      const confirmBox = card.querySelector(".task-delete-confirm");
+      if (confirmBox instanceof HTMLElement) {
+        confirmBox.classList.remove("show");
+      }
     }
   });
 
-  card.addEventListener("dragstart", () => {
+  card.addEventListener("dragstart", (event) => {
     draggingTaskId = task.id;
-    draggedFromColumn = task.status;
     card.classList.add("dragging");
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", task.id);
+    }
   });
 
   card.addEventListener("dragend", () => {
     draggingTaskId = null;
-    draggedFromColumn = null;
+    dragOverListId = null;
     card.classList.remove("dragging");
-    document.querySelectorAll(".task-list").forEach((list) => {
-      list.classList.remove("drag-over");
-    });
+    clearDropIndicators();
   });
 
   return card;
-}
-
-function renameTask(taskId, nextTitle, cardElement) {
-  const title = (nextTitle || "").trim();
-  if (!title) {
-    return;
-  }
-
-  const task = tasks.find((item) => item.id === taskId);
-  if (!task) {
-    return;
-  }
-
-  task.title = title;
-  saveTasks();
-  render();
-
-  if (cardElement) {
-    cardElement.classList.remove("renaming");
-  }
 }
 
 function moveTask(taskId, direction) {
@@ -756,25 +921,29 @@ function moveTask(taskId, direction) {
     return;
   }
 
-  const oldStatus = task.status;
   task.status = COLUMNS[nextIndex];
-  task.order = getNextOrder(activeBoardId, task.status);
-  renormalizeColumnOrders(activeBoardId, oldStatus);
+  editingTaskId = null;
+  deleteConfirmTaskId = null;
   saveTasks();
   render();
 }
 
 function deleteTask(taskId) {
-  const task = tasks.find((item) => item.id === taskId);
-  if (!task) {
-    return;
+  tasks = tasks.filter((task) => task.id !== taskId);
+  if (editingTaskId === taskId) {
+    editingTaskId = null;
   }
-
-  const status = task.status;
-  tasks = tasks.filter((item) => item.id !== taskId);
-  renormalizeColumnOrders(activeBoardId, status);
+  if (deleteConfirmTaskId === taskId) {
+    deleteConfirmTaskId = null;
+  }
   saveTasks();
   render();
+}
+
+function closeAllTaskDeleteConfirms() {
+  document.querySelectorAll(".task-delete-confirm.show").forEach((element) => {
+    element.classList.remove("show");
+  });
 }
 
 function setupDropZones() {
@@ -784,65 +953,127 @@ function setupDropZones() {
 
     taskList.addEventListener("dragover", (event) => {
       event.preventDefault();
+      dragOverListId = taskList.id;
       taskList.classList.add("drag-over");
+      updateDropIndicator(taskList, event.clientY);
+    });
 
-      const draggingElement = document.querySelector(".task.dragging");
-      if (!draggingElement) {
+    taskList.addEventListener("dragleave", (event) => {
+      const related = event.relatedTarget;
+      if (related instanceof Node && taskList.contains(related)) {
         return;
       }
 
-      const afterElement = getDragAfterElement(taskList, event.clientY);
-      if (!afterElement) {
-        taskList.appendChild(draggingElement);
-      } else {
-        taskList.insertBefore(draggingElement, afterElement);
+      if (dragOverListId === taskList.id) {
+        dragOverListId = null;
       }
-    });
 
-    taskList.addEventListener("dragleave", () => {
       taskList.classList.remove("drag-over");
+      taskList.classList.remove("drop-at-end");
+      taskList.dataset.dropBeforeId = "";
+      clearCardIndicators(taskList);
     });
 
     taskList.addEventListener("drop", (event) => {
       event.preventDefault();
       taskList.classList.remove("drag-over");
+      taskList.classList.remove("drop-at-end");
 
-      if (!draggingTaskId) {
+      const draggedId = draggingTaskId || event.dataTransfer?.getData("text/plain");
+      if (!draggedId) {
         return;
       }
 
-      const task = tasks.find((item) => item.id === draggingTaskId);
-      if (!task || task.boardId !== activeBoardId) {
-        return;
-      }
+      const beforeTaskId = taskList.dataset.dropBeforeId || null;
 
-      task.status = column;
-
-      const orderedIds = Array.from(taskList.querySelectorAll(".task")).map((el) => el.dataset.id);
-      applyColumnOrderByIds(activeBoardId, column, orderedIds);
-
-      if (draggedFromColumn && draggedFromColumn !== column) {
-        renormalizeColumnOrders(activeBoardId, draggedFromColumn);
-      }
-
-      saveTasks();
-      render();
+      moveTaskByDrop(draggedId, column, beforeTaskId);
+      clearDropIndicators();
     });
   });
 }
 
-function getDragAfterElement(container, y) {
-  const elements = [...container.querySelectorAll(".task:not(.dragging)")];
+function updateDropIndicator(taskList, cursorY) {
+  const cards = Array.from(taskList.querySelectorAll(".task:not(.dragging)"));
+  const nextCard = cards.find((card) => {
+    const rect = card.getBoundingClientRect();
+    return cursorY <= rect.top + rect.height / 2;
+  });
 
-  return elements.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset, element: child };
-      }
-      return closest;
-    },
-    { offset: Number.NEGATIVE_INFINITY, element: null },
-  ).element;
+  clearCardIndicators(taskList);
+  taskList.classList.remove("drop-at-end");
+
+  if (nextCard) {
+    nextCard.classList.add("drop-indicator");
+    taskList.dataset.dropBeforeId = nextCard.dataset.id || "";
+    return;
+  }
+
+  taskList.dataset.dropBeforeId = "";
+  taskList.classList.add("drop-at-end");
+}
+
+function clearCardIndicators(taskList) {
+  taskList.querySelectorAll(".task.drop-indicator").forEach((card) => {
+    card.classList.remove("drop-indicator");
+  });
+}
+
+function clearDropIndicators() {
+  document.querySelectorAll(".task-list").forEach((list) => {
+    list.classList.remove("drag-over", "drop-at-end");
+    list.dataset.dropBeforeId = "";
+    clearCardIndicators(list);
+  });
+}
+
+function moveTaskByDrop(taskId, targetColumn, beforeTaskId) {
+  const draggedTask = tasks.find((task) => task.id === taskId);
+  if (!draggedTask) {
+    return;
+  }
+
+  if (beforeTaskId && beforeTaskId === taskId) {
+    return;
+  }
+
+  const remaining = tasks.filter((task) => task.id !== taskId);
+  const updatedTask = { ...draggedTask, status: targetColumn };
+
+  let insertIndex = -1;
+
+  if (beforeTaskId) {
+    insertIndex = remaining.findIndex((task) => task.id === beforeTaskId);
+  }
+
+  if (insertIndex === -1) {
+    insertIndex = lastIndexOfStatus(remaining, targetColumn) + 1;
+    if (insertIndex < 0) {
+      insertIndex = remaining.length;
+    }
+  }
+
+  remaining.splice(insertIndex, 0, updatedTask);
+  tasks = remaining;
+  editingTaskId = null;
+  deleteConfirmTaskId = null;
+  saveTasks();
+  render();
+}
+
+function lastIndexOfStatus(list, status) {
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    if (list[i].status === status) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

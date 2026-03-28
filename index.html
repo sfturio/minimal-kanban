@@ -15,48 +15,45 @@
     <header class="topbar">
       <div>
         <h1>Fluxo Essencial</h1>
-        <p class="subtitle">Foco e fluxo diário · <span id="current-board-name">Board</span></p>
+        <p class="subtitle">Foco e fluxo diário · <span id="board-name">Principal</span></p>
       </div>
-      <div class="topbar-actions">
-        <button id="board-menu-toggle" type="button" class="new-board-btn" aria-label="Boards">+</button>
-      <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
-        <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
-      </button>
+      <div class="header-actions">
+        <button id="board-toggle" type="button" class="theme-btn" aria-label="Tabelas" aria-expanded="false">+</button>
+        <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
+          <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
+        </button>
       </div>
     </header>
-
-    <div id="board-menu-overlay" class="board-menu-overlay" hidden>
-      <div class="board-menu" role="dialog" aria-label="Boards">
-        <div class="board-menu-head">
-          <h3>Boards</h3>
-          <button id="close-board-menu-btn" type="button" class="close-board-menu-btn" aria-label="Fechar boards">×</button>
-        </div>
-        <div id="board-list" class="board-list"></div>
-        <div id="board-inline-slot" class="board-inline-slot"></div>
-        <p id="board-menu-message" class="board-menu-message" aria-live="polite"></p>
-        <button id="add-board-btn" type="button" class="add-board-btn">+ New board</button>
-      </div>
-    </div>
 
     <form id="task-form" class="task-form" autocomplete="off">
       <input id="task-title" name="title" type="text" placeholder="Nova tarefa" required maxlength="120" />
       <input id="task-description" name="description" type="text" placeholder="Categoria (opcional)" maxlength="240" />
       <button type="submit">Adicionar</button>
+      <button id="ia-generate-btn" type="button">Planejar</button>
     </form>
 
     <section class="board" aria-label="Fluxo Essencial">
       <article class="column" data-column="todo">
-        <h2>Próximos</h2>
+        <div class="column-head">
+          <h2>Próximos</h2>
+          <button type="button" class="clear-column-btn" data-action="clear-column" data-column="todo">Limpar</button>
+        </div>
         <div class="task-list" id="todo-list"></div>
       </article>
 
       <article class="column" data-column="inprogress">
-        <h2>Em andamento</h2>
+        <div class="column-head">
+          <h2>Em andamento</h2>
+          <button type="button" class="clear-column-btn" data-action="clear-column" data-column="inprogress">Limpar</button>
+        </div>
         <div class="task-list" id="inprogress-list"></div>
       </article>
 
       <article class="column" data-column="done">
-        <h2>Concluído</h2>
+        <div class="column-head">
+          <h2>Concluído</h2>
+          <button type="button" class="clear-column-btn" data-action="clear-column" data-column="done">Limpar</button>
+        </div>
         <div class="task-list" id="done-list"></div>
       </article>
     </section>
@@ -67,6 +64,35 @@
       <span class="dot"></span>
       <span id="focus-label">Modo Foco</span>
     </button>
+  </div>
+
+  <div id="ai-modal-overlay" class="modal-overlay" hidden>
+    <section class="ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
+      <div class="ai-modal-head">
+        <h2 id="ai-modal-title">Planejar com IA</h2>
+        <button id="ai-close-btn" type="button" class="icon-close" aria-label="Fechar modal">×</button>
+      </div>
+      <p>Descreva o que você quer fazer</p>
+      <textarea id="ai-plan-input" rows="7" placeholder="Separe tarefas com ; Ex: revisar e-mails ; treino de peito ; estudar JavaScript. Dica: se usar (), vira categoria. Ex: estudar JavaScript (noite)"></textarea>
+      <div class="ai-modal-actions">
+        <button id="ai-cancel-btn" type="button" class="secondary">Cancelar</button>
+        <button id="ai-generate-confirm-btn" type="button" class="primary">Gerar tarefas</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="boards-overlay" class="boards-overlay" hidden>
+    <aside class="boards-panel" role="dialog" aria-modal="true" aria-labelledby="boards-title">
+      <div class="boards-head">
+        <h2 id="boards-title">Tabelas</h2>
+        <button id="boards-close" type="button" class="icon-close" aria-label="Fechar tabelas">×</button>
+      </div>
+      <div id="boards-list" class="boards-list"></div>
+      <div class="boards-create">
+        <input id="new-board-input" type="text" placeholder="Nova tabela" maxlength="60" />
+        <button id="create-board-btn" type="button">+ Nova tabela</button>
+      </div>
+    </aside>
   </div>
 
   <script src="script.js"></script>
