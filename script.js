@@ -148,12 +148,43 @@ function onGenerateIATasks() {
     return;
   }
 
-  gerarTasksIA(text);
+  const generated = gerarTasksIA(text);
+  if (generated === 0) {
+    return;
+  }
+
+  if (aiPlanInput) {
+    aiPlanInput.value = "";
+  }
+
   closeAIPlanningModal();
 }
 
 function gerarTasksIA(text) {
-  console.log("Planejando com IA:", text);
+  const plannedTitles = text
+    .split(";")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (plannedTitles.length === 0) {
+    return 0;
+  }
+
+  const plannedTasks = plannedTitles.map((title) => ({
+    id: crypto.randomUUID(),
+    title,
+    description: "",
+    category: "Geral",
+    status: "todo",
+  }));
+
+  // Add planned tasks at the top of "Próximos".
+  tasks = [...plannedTasks, ...tasks];
+  saveTasks();
+  render();
+
+  console.log("Planejando com IA:", plannedTitles);
+  return plannedTasks.length;
 }
 
 function openAIPlanningModal() {
@@ -229,7 +260,7 @@ function createTaskElement(task) {
     <div class="task-actions">
       <button type="button" data-action="left">←</button>
       <button type="button" data-action="right">→</button>
-      <button type="button" class="delete" data-action="delete">Delete</button>
+      <button type="button" class="delete" data-action="delete">Excluir</button>
     </div>
   `;
 
