@@ -1,4 +1,4 @@
-ï»¿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -15,7 +15,7 @@
     <header class="topbar">
       <div>
         <h1>Fluxo Essencial</h1>
-        <p class="subtitle">Foco e fluxo diÃ¡rio</p>
+        <p class="subtitle">Foco e fluxo diário</p>
       </div>
       <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
         <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
@@ -26,12 +26,12 @@
       <input id="task-title" name="title" type="text" placeholder="Nova tarefa" required maxlength="120" />
       <input id="task-description" name="description" type="text" placeholder="Categoria (opcional)" maxlength="240" />
       <button type="submit">Adicionar</button>
-      <button id="ia-generate-btn" type="button">âœ¨ Planejar</button>
+      <button id="ia-generate-btn" type="button">Planejar</button>
     </form>
 
     <section class="board" aria-label="Fluxo Essencial">
       <article class="column" data-column="todo">
-        <h2>PrÃ³ximos</h2>
+        <h2>Próximos</h2>
         <div class="task-list" id="todo-list"></div>
       </article>
 
@@ -58,13 +58,13 @@
     <section class="ai-modal" role="dialog" aria-modal="true" aria-labelledby="ai-modal-title">
       <div class="ai-modal-head">
         <h2 id="ai-modal-title">Planejar com IA</h2>
-        <button id="ai-close-btn" type="button" class="icon-close" aria-label="Fechar modal">Ã—</button>
+        <button id="ai-close-btn" type="button" class="icon-close" aria-label="Fechar modal">×</button>
       </div>
-      <p>Descreva o que vocÃª quer fazer</p>
+      <p>Descreva o que você quer fazer</p>
       <textarea id="ai-plan-input" rows="7" placeholder="Ex.: organizar tarefas da semana com foco em prioridade e tempo"></textarea>
       <div class="ai-modal-actions">
         <button id="ai-cancel-btn" type="button" class="secondary">Cancelar</button>
-        <button id="ai-generate-confirm-btn" type="button" class="primary">Gerar tarefas âœ¨</button>
+        <button id="ai-generate-confirm-btn" type="button" class="primary">Gerar tarefas</button>
       </div>
     </section>
   </div>
@@ -72,3 +72,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
