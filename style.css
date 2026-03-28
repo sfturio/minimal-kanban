@@ -58,6 +58,128 @@ body.dark {
   margin-bottom: 1rem;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.new-board-btn {
+  border: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-low) 84%, var(--surface-card));
+  color: var(--primary);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.new-board-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 70%, var(--surface-card));
+}
+
+.board-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 16, 14, 0.28);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4.2rem 1.5rem 0;
+}
+
+.board-menu-overlay[hidden] {
+  display: none !important;
+}
+
+.board-menu {
+  width: min(320px, 92vw);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-low));
+  border: 1px solid var(--line-soft);
+  padding: 0.85rem;
+}
+
+.board-menu h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.board-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close-board-menu-btn {
+  border: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-low) 86%, var(--surface-card));
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close-board-menu-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+}
+
+.board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  margin-bottom: 0.7rem;
+}
+
+.board-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-low) 86%, var(--surface-card));
+  color: color-mix(in srgb, var(--text) 88%, transparent);
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.board-item:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+}
+
+.board-item.active {
+  background: color-mix(in srgb, var(--primary) 16%, var(--surface-low));
+  color: color-mix(in srgb, var(--text) 92%, var(--primary));
+}
+
+.add-board-btn {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-low) 82%, var(--surface-card));
+  color: color-mix(in srgb, var(--primary) 86%, var(--text));
+  padding: 0.55rem 0.6rem;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-board-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 70%, var(--surface-card));
+}
+
 h1 {
   margin: 0;
   font-size: 2rem;

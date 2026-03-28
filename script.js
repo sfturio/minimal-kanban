@@ -1,8 +1,13 @@
 ﻿const STORAGE_KEY = "kanban.tasks.v1";
+const BOARDS_KEY = "kanban.boards.v1";
+const ACTIVE_BOARD_KEY = "kanban.active-board.v1";
 const THEME_KEY = "kanban.theme.v1";
 const FOCUS_KEY = "kanban.focus.v1";
 const COLUMNS = ["todo", "inprogress", "done"];
+const DEFAULT_BOARD_NAME = "Principal";
 
+let boards = loadBoards();
+let activeBoardId = loadActiveBoardId(boards);
 let tasks = loadTasks().map(normalizeTask);
 let draggingTaskId = null;
 
@@ -13,15 +18,159 @@ const themeToggleButton = document.getElementById("theme-toggle");
 const themeIcon = document.getElementById("theme-icon");
 const focusToggleButton = document.getElementById("focus-toggle");
 const focusLabel = document.getElementById("focus-label");
+const boardMenuToggle = document.getElementById("board-menu-toggle");
+const boardMenuOverlay = document.getElementById("board-menu-overlay");
+const boardList = document.getElementById("board-list");
+const addBoardButton = document.getElementById("add-board-btn");
+const currentBoardName = document.getElementById("current-board-name");
+const closeBoardMenuButton = document.getElementById("close-board-menu-btn");
 
 form.addEventListener("submit", onCreateTask);
 themeToggleButton?.addEventListener("click", toggleTheme);
 focusToggleButton?.addEventListener("click", toggleFocusMode);
+boardMenuToggle?.addEventListener("click", toggleBoardMenu);
+addBoardButton?.addEventListener("click", addBoard);
+closeBoardMenuButton?.addEventListener("click", closeBoardMenu);
+boardMenuOverlay?.addEventListener("click", (event) => {
+  if (!event.target.closest(".board-menu")) {
+    closeBoardMenu();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if ((event.key === "Escape" || event.key === "Esc") && boardMenuOverlay && !boardMenuOverlay.hasAttribute("hidden")) {
+    closeBoardMenu();
+  }
+});
 
 initTheme();
 initFocusMode();
 setupDropZones();
 render();
+renderBoardMenu();
+updateCurrentBoardName();
+
+function loadBoards() {
+  try {
+    const raw = localStorage.getItem(BOARDS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return [createBoard(DEFAULT_BOARD_NAME)];
+    }
+
+    const sanitized = parsed
+      .filter((board) => board && typeof board.id === "string" && typeof board.name === "string")
+      .map((board) => ({ id: board.id, name: board.name.trim() || DEFAULT_BOARD_NAME }));
+
+    return sanitized.length ? sanitized : [createBoard(DEFAULT_BOARD_NAME)];
+  } catch {
+    return [createBoard(DEFAULT_BOARD_NAME)];
+  }
+}
+
+function loadActiveBoardId(boardItems) {
+  const stored = localStorage.getItem(ACTIVE_BOARD_KEY);
+  if (stored && boardItems.some((board) => board.id === stored)) {
+    return stored;
+  }
+  return boardItems[0].id;
+}
+
+function saveBoards() {
+  localStorage.setItem(BOARDS_KEY, JSON.stringify(boards));
+  localStorage.setItem(ACTIVE_BOARD_KEY, activeBoardId);
+}
+
+function createBoard(name) {
+  return {
+    id: crypto.randomUUID(),
+    name: (name || DEFAULT_BOARD_NAME).trim(),
+  };
+}
+
+function toggleBoardMenu() {
+  if (!boardMenuOverlay) {
+    return;
+  }
+
+  const shouldOpen = boardMenuOverlay.hasAttribute("hidden");
+  if (shouldOpen) {
+    openBoardMenu();
+  } else {
+    closeBoardMenu();
+  }
+}
+
+function openBoardMenu() {
+  if (!boardMenuOverlay) {
+    return;
+  }
+
+  renderBoardMenu();
+  boardMenuOverlay.hidden = false;
+}
+
+function closeBoardMenu() {
+  if (!boardMenuOverlay) {
+    return;
+  }
+
+  boardMenuOverlay.hidden = true;
+}
+
+function renderBoardMenu() {
+  if (!boardList) {
+    return;
+  }
+
+  boardList.innerHTML = "";
+
+  boards.forEach((board) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `board-item${board.id === activeBoardId ? " active" : ""}`;
+    button.textContent = board.name;
+    button.addEventListener("click", () => {
+      activeBoardId = board.id;
+      saveBoards();
+      updateCurrentBoardName();
+      render();
+      renderBoardMenu();
+      closeBoardMenu();
+    });
+
+    boardList.appendChild(button);
+  });
+}
+
+function addBoard() {
+  const input = window.prompt("Nome da nova board:", "Nova board");
+  if (!input) {
+    return;
+  }
+
+  const name = input.trim();
+  if (!name) {
+    return;
+  }
+
+  const board = createBoard(name);
+  boards.push(board);
+  activeBoardId = board.id;
+  saveBoards();
+  updateCurrentBoardName();
+  render();
+  renderBoardMenu();
+  closeBoardMenu();
+}
+
+function updateCurrentBoardName() {
+  if (!currentBoardName) {
+    return;
+  }
+
+  const board = boards.find((item) => item.id === activeBoardId);
+  currentBoardName.textContent = board ? board.name : DEFAULT_BOARD_NAME;
+}
 
 function initTheme() {
   const stored = localStorage.getItem(THEME_KEY);
@@ -72,7 +221,6 @@ function applyFocusMode(on) {
     );
     if (on) {
       focusToggleButton.classList.remove("pulse");
-      // Force reflow so repeated activations replay the animation.
       void focusToggleButton.offsetWidth;
       focusToggleButton.classList.add("pulse");
     }
@@ -104,6 +252,7 @@ function normalizeTask(task) {
 
   return {
     ...task,
+    boardId: task.boardId || activeBoardId,
     category,
   };
 }
@@ -125,6 +274,7 @@ function onCreateTask(event) {
 
   tasks.push({
     id: crypto.randomUUID(),
+    boardId: activeBoardId,
     title,
     description,
     category: description ? inferCategory(description) : "",
@@ -147,7 +297,7 @@ function render() {
     list.innerHTML = "";
 
     tasks
-      .filter((task) => task.status === column)
+      .filter((task) => task.boardId === activeBoardId && task.status === column)
       .forEach((task) => list.appendChild(createTaskElement(task)));
   });
 }
@@ -200,7 +350,6 @@ function createTaskElement(task) {
   });
 
   renameInput.addEventListener("blur", () => {
-    // Keep row open only while actively renaming.
     setTimeout(() => {
       if (!card.contains(document.activeElement)) {
         card.classList.remove("renaming");
@@ -342,7 +491,7 @@ function setupDropZones() {
       }
 
       const task = tasks.find((item) => item.id === draggingTaskId);
-      if (!task || task.status === column) {
+      if (!task || task.status === column || task.boardId !== activeBoardId) {
         return;
       }
 

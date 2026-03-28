@@ -15,12 +15,26 @@
     <header class="topbar">
       <div>
         <h1>Fluxo Essencial</h1>
-        <p class="subtitle">Foco e fluxo diário</p>
+        <p class="subtitle">Foco e fluxo diário · <span id="current-board-name">Board</span></p>
       </div>
+      <div class="topbar-actions">
+        <button id="board-menu-toggle" type="button" class="new-board-btn" aria-label="Boards">+</button>
       <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
         <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
       </button>
+      </div>
     </header>
+
+    <div id="board-menu-overlay" class="board-menu-overlay" hidden>
+      <div class="board-menu" role="dialog" aria-label="Boards">
+        <div class="board-menu-head">
+          <h3>Boards</h3>
+          <button id="close-board-menu-btn" type="button" class="close-board-menu-btn" aria-label="Fechar boards">×</button>
+        </div>
+        <div id="board-list" class="board-list"></div>
+        <button id="add-board-btn" type="button" class="add-board-btn">+ New board</button>
+      </div>
+    </div>
 
     <form id="task-form" class="task-form" autocomplete="off">
       <input id="task-title" name="title" type="text" placeholder="Nova tarefa" required maxlength="120" />
@@ -40,7 +54,7 @@
       </article>
 
       <article class="column" data-column="done">
-        <h2>Feito</h2>
+        <h2>Concluído</h2>
         <div class="task-list" id="done-list"></div>
       </article>
     </section>
