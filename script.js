@@ -12,6 +12,7 @@ const descriptionInput = document.getElementById("task-description");
 const themeToggleButton = document.getElementById("theme-toggle");
 const themeIcon = document.getElementById("theme-icon");
 const focusToggleButton = document.getElementById("focus-toggle");
+const focusLabel = document.getElementById("focus-label");
 
 form.addEventListener("submit", onCreateTask);
 themeToggleButton?.addEventListener("click", toggleTheme);
@@ -65,12 +66,20 @@ function applyFocusMode(on) {
   if (focusToggleButton) {
     focusToggleButton.classList.toggle("active", on);
     focusToggleButton.setAttribute("aria-pressed", String(on));
+    focusToggleButton.setAttribute(
+      "aria-label",
+      on ? "Desativar modo foco" : "Ativar modo foco",
+    );
     if (on) {
       focusToggleButton.classList.remove("pulse");
       // Force reflow so repeated activations replay the animation.
       void focusToggleButton.offsetWidth;
       focusToggleButton.classList.add("pulse");
     }
+  }
+
+  if (focusLabel) {
+    focusLabel.textContent = on ? "Sair do foco" : "Modo Foco";
   }
 }
 

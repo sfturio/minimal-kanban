@@ -299,6 +299,26 @@ body.focus-mode .task.dragging {
   opacity: 1;
 }
 
+body.focus-mode .task-form {
+  display: none;
+}
+
+body.focus-mode .board {
+  grid-template-columns: minmax(320px, 760px);
+  justify-content: center;
+}
+
+body.focus-mode .column:not([data-column="inprogress"]) {
+  display: none;
+}
+
+body.focus-mode .column[data-column="inprogress"] h2::after {
+  content: " · foco";
+  font-size: 0.72em;
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--primary) 72%, var(--text));
+}
+
 .focus-btn.pulse {
   animation: focusPulse 300ms ease-out;
 }
