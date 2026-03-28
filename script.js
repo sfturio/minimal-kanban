@@ -1,16 +1,78 @@
 ﻿const STORAGE_KEY = "kanban.tasks.v1";
+const THEME_KEY = "kanban.theme.v1";
+const FOCUS_KEY = "kanban.focus.v1";
 const COLUMNS = ["todo", "inprogress", "done"];
 
-let tasks = loadTasks();
+let tasks = loadTasks().map(normalizeTask);
 let draggingTaskId = null;
 
 const form = document.getElementById("task-form");
 const titleInput = document.getElementById("task-title");
 const descriptionInput = document.getElementById("task-description");
+const themeToggleButton = document.getElementById("theme-toggle");
+const themeIcon = document.getElementById("theme-icon");
+const focusToggleButton = document.getElementById("focus-toggle");
 
 form.addEventListener("submit", onCreateTask);
+themeToggleButton?.addEventListener("click", toggleTheme);
+focusToggleButton?.addEventListener("click", toggleFocusMode);
+
+initTheme();
+initFocusMode();
 setupDropZones();
 render();
+
+function initTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = stored || (prefersDark ? "dark" : "light");
+  applyTheme(theme);
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.contains("dark");
+  applyTheme(isDark ? "light" : "dark");
+}
+
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.body.classList.toggle("dark", isDark);
+  localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+
+  if (themeIcon) {
+    themeIcon.textContent = isDark ? "light_mode" : "dark_mode";
+  }
+
+  if (themeToggleButton) {
+    themeToggleButton.setAttribute("aria-pressed", String(isDark));
+  }
+}
+
+function initFocusMode() {
+  const stored = localStorage.getItem(FOCUS_KEY) === "on";
+  applyFocusMode(stored);
+}
+
+function toggleFocusMode() {
+  const isOn = document.body.classList.contains("focus-mode");
+  applyFocusMode(!isOn);
+}
+
+function applyFocusMode(on) {
+  document.body.classList.toggle("focus-mode", on);
+  localStorage.setItem(FOCUS_KEY, on ? "on" : "off");
+
+  if (focusToggleButton) {
+    focusToggleButton.classList.toggle("active", on);
+    focusToggleButton.setAttribute("aria-pressed", String(on));
+    if (on) {
+      focusToggleButton.classList.remove("pulse");
+      // Force reflow so repeated activations replay the animation.
+      void focusToggleButton.offsetWidth;
+      focusToggleButton.classList.add("pulse");
+    }
+  }
+}
 
 function loadTasks() {
   try {
@@ -20,6 +82,13 @@ function loadTasks() {
   } catch {
     return [];
   }
+}
+
+function normalizeTask(task) {
+  return {
+    ...task,
+    category: task.category || inferCategory(task.description || ""),
+  };
 }
 
 function saveTasks() {
@@ -41,6 +110,7 @@ function onCreateTask(event) {
     id: crypto.randomUUID(),
     title,
     description,
+    category: inferCategory(description),
     status: "todo",
   });
 
@@ -48,6 +118,14 @@ function onCreateTask(event) {
   titleInput.focus();
   saveTasks();
   render();
+}
+
+function inferCategory(description) {
+  if (!description) {
+    return "Geral";
+  }
+
+  return description.slice(0, 16).trim();
 }
 
 function render() {
@@ -63,13 +141,13 @@ function render() {
 
 function createTaskElement(task) {
   const card = document.createElement("article");
-  card.className = "task";
+  card.className = `task${task.status === "done" ? " done" : ""}`;
   card.draggable = true;
   card.dataset.id = task.id;
 
   card.innerHTML = `
-    <h3 class="task-title"></h3>
-    <p class="task-description"></p>
+    <p class="task-title"></p>
+    <span class="task-category"></span>
     <div class="task-actions">
       <button type="button" data-action="left">←</button>
       <button type="button" data-action="right">→</button>
@@ -78,9 +156,7 @@ function createTaskElement(task) {
   `;
 
   card.querySelector(".task-title").textContent = task.title;
-  const description = card.querySelector(".task-description");
-  description.textContent = task.description || "";
-  description.style.display = task.description ? "block" : "none";
+  card.querySelector(".task-category").textContent = task.category || "Geral";
 
   const leftButton = card.querySelector('[data-action="left"]');
   const rightButton = card.querySelector('[data-action="right"]');
@@ -117,7 +193,9 @@ function createTaskElement(task) {
   card.addEventListener("dragend", () => {
     draggingTaskId = null;
     card.classList.remove("dragging");
-    document.querySelectorAll(".task-list").forEach((list) => list.classList.remove("drag-over"));
+    document.querySelectorAll(".task-list").forEach((list) => {
+      list.classList.remove("drag-over");
+    });
   });
 
   return card;

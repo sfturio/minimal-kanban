@@ -1,39 +1,57 @@
 ﻿<!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simple Kanban</title>
+  <title>Fluxo Essencial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
-    <header class="app-header">
-      <h1>Kanban Board</h1>
-      <form id="task-form" class="task-form" autocomplete="off">
-        <input id="task-title" name="title" type="text" placeholder="Task title" required maxlength="120" />
-        <input id="task-description" name="description" type="text" placeholder="Description (optional)" maxlength="240" />
-        <button type="submit">Add Task</button>
-      </form>
+    <header class="topbar">
+      <div>
+        <h1>Fluxo Essencial</h1>
+        <p class="subtitle">Foco e fluxo diário</p>
+      </div>
+      <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
+        <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
+      </button>
     </header>
 
-    <section class="board" aria-label="Kanban board">
+    <form id="task-form" class="task-form" autocomplete="off">
+      <input id="task-title" name="title" type="text" placeholder="Nova tarefa" required maxlength="120" />
+      <input id="task-description" name="description" type="text" placeholder="Categoria (opcional)" maxlength="240" />
+      <button type="submit">Adicionar</button>
+    </form>
+
+    <section class="board" aria-label="Fluxo Essencial">
       <article class="column" data-column="todo">
-        <h2>To Do</h2>
+        <h2>Próximos</h2>
         <div class="task-list" id="todo-list"></div>
       </article>
 
       <article class="column" data-column="inprogress">
-        <h2>In Progress</h2>
+        <h2>Em andamento</h2>
         <div class="task-list" id="inprogress-list"></div>
       </article>
 
       <article class="column" data-column="done">
-        <h2>Done</h2>
+        <h2>Feito</h2>
         <div class="task-list" id="done-list"></div>
       </article>
     </section>
   </main>
+
+  <div class="focus-wrap">
+    <button id="focus-toggle" type="button" class="focus-btn" aria-pressed="false">
+      <span class="dot"></span>
+      <span>Modo Foco</span>
+    </button>
+  </div>
 
   <script src="script.js"></script>
 </body>
