@@ -1,15 +1,15 @@
 ﻿:root {
-  --background: #f9f9f7;
-  --surface-low: #f2f4f2;
-  --surface-card: #ffffff;
-  --surface-hover: #fbfcfb;
-  --text: #2d3432;
-  --text-muted: #767c79;
-  --chip-bg: rgba(88, 98, 77, 0.06);
+  --background: #e4e8e2;
+  --surface-low: #d3dad3;
+  --surface-card: #e9eee8;
+  --surface-hover: #edf2ec;
+  --text: #212c27;
+  --text-muted: #55615b;
+  --chip-bg: rgba(88, 98, 77, 0.09);
   --primary: #58624d;
-  --line-soft: rgba(173, 179, 176, 0.2);
-  --focus-chip-bg: rgba(222, 228, 224, 0.72);
-  --focus-chip-border: rgba(173, 179, 176, 0.2);
+  --line-soft: rgba(116, 127, 121, 0.42);
+  --focus-chip-bg: rgba(199, 208, 201, 0.82);
+  --focus-chip-border: rgba(116, 127, 121, 0.34);
   --focus-chip-text: rgba(45, 52, 50, 0.82);
 }
 
@@ -161,12 +161,13 @@ body.dark .task-form button:hover {
   color: color-mix(in srgb, var(--text-muted) 86%, var(--primary));
   font-weight: 600;
   letter-spacing: 0.01em;
-  transition: background-color 0.22s ease, color 0.22s ease;
+  transition: background-color 0.22s ease, color 0.22s ease, filter 0.22s ease;
 }
 
 #ia-generate-btn:hover {
-  background: color-mix(in srgb, var(--surface-low) 74%, var(--surface-card));
-  color: color-mix(in srgb, var(--primary) 82%, var(--text));
+  background: #e6ebe5;
+  color: color-mix(in srgb, var(--primary) 84%, var(--text));
+  filter: saturate(0.96);
 }
 
 .board {
