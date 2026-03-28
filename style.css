@@ -536,7 +536,6 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 
 .board-item.active-table {
   background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
-  outline: 1px solid color-mix(in srgb, var(--line-soft) 85%, var(--primary));
 }
 
 .board-item button {
@@ -555,16 +554,6 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
   background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
   color: color-mix(in srgb, var(--primary) 86%, var(--text));
   font-weight: 600;
-}
-
-.board-item.active-table .board-select::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 0.4rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--primary) 85%, var(--text));
 }
 
 .board-actions {
