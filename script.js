@@ -553,13 +553,16 @@ function gerarTasksIA(text) {
     return 0;
   }
 
-  const plannedTasks = plannedTitles.map((title) => ({
-    id: crypto.randomUUID(),
-    title,
-    description: "",
-    category: "",
-    status: "todo",
-  }));
+  const plannedTasks = plannedTitles
+    .map(parsePlannedTask)
+    .filter((task) => task.title.length > 0)
+    .map((task) => ({
+      id: crypto.randomUUID(),
+      title: task.title,
+      description: task.category,
+      category: task.category,
+      status: "todo",
+    }));
 
   tasks = [...plannedTasks, ...tasks];
   saveTasks();
@@ -567,6 +570,26 @@ function gerarTasksIA(text) {
 
   console.log("Planejando com IA:", plannedTitles);
   return plannedTasks.length;
+}
+
+function parsePlannedTask(rawText) {
+  const input = String(rawText || "").trim();
+  const match = input.match(/^(.*)\s+\(([^)]+)\)\s*$/);
+
+  if (!match) {
+    return {
+      title: input,
+      category: "",
+    };
+  }
+
+  const title = match[1].trim();
+  const category = match[2].trim();
+
+  return {
+    title,
+    category,
+  };
 }
 
 function openAIPlanningModal() {
