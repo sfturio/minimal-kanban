@@ -127,15 +127,14 @@
           <input id="task-edit-tags" type="text" maxlength="120" />
         </label>
         <label>
-          Deadline
+          Data
           <input id="task-edit-deadline" type="text" maxlength="32" />
         </label>
         <label>
           Prioridade
           <select id="task-edit-priority">
             <option value="normal">Normal</option>
-            <option value="medium">!</option>
-            <option value="high">!!</option>
+            <option value="high">Importante</option>
           </select>
         </label>
       </div>
@@ -155,11 +154,11 @@
       <ul class="help-list">
         <li>Separe tarefas com <code>;</code></li>
         <li>Use <code>!</code> no começo para ir para <strong>Em andamento</strong></li>
-        <li>Use <code>!!</code> para marcar prioridade alta</li>
+        <li>Use <code>!!</code> ou <code>importante</code> para marcar prioridade alta</li>
         <li>Use <code>(categoria)</code> para definir a categoria</li>
         <li>Use <code>@responsavel</code> para responsável</li>
         <li>Use <code>#tag</code> para tags</li>
-        <li>Use <code>+data</code> para deadline</li>
+        <li>Use <code>+data</code> para Data</li>
       </ul>
       <p class="help-example">Exemplo: <code>!criar API (manhã) @joao #backend +2026-04-05</code></p>
     </section>

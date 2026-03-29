@@ -395,10 +395,6 @@ body.dark .task-list.drag-over {
   color: #8a5858;
 }
 
-.task.priority-medium .task-title {
-  color: color-mix(in srgb, var(--primary) 88%, var(--text));
-}
-
 .task.priority-high .task-title {
   color: #c97373;
 }

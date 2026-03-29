@@ -247,7 +247,7 @@ function normalizeTask(task) {
     tags: Array.isArray(task.tags) ? task.tags.filter(Boolean) : [],
     deadline: typeof task.deadline === "string" ? task.deadline.trim() : null,
     status: COLUMNS.includes(task.status) ? task.status : "todo",
-    priority: task.priority === "high" ? "high" : task.priority === "medium" ? "medium" : "normal",
+    priority: task.priority === "high" ? "high" : "normal",
     createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
   };
 }
@@ -796,9 +796,13 @@ function parseTaskItem(rawText) {
     };
   }
 
+  const importantMatch = trimmed.match(/^importante[:\s]+/i);
   const priorityMatch = trimmed.match(/^!+/);
   const priorityCount = priorityMatch ? priorityMatch[0].length : 0;
   let withoutPriority = trimmed.replace(/^!+/, "").trim();
+  if (importantMatch) {
+    withoutPriority = withoutPriority.replace(/^importante[:\s]+/i, "").trim();
+  }
 
   const categoryMatch = withoutPriority.match(/^(.*)\(([^)]+)\)\s*$/);
   const baseText = categoryMatch ? categoryMatch[1].trim() : withoutPriority;
@@ -827,8 +831,8 @@ function parseTaskItem(rawText) {
     .trim();
 
   const isPriority = priorityCount >= 1;
-  const isHighPriority = priorityCount >= 2;
-  const priority = isHighPriority ? "high" : isPriority ? "medium" : "normal";
+  const isHighPriority = priorityCount >= 2 || Boolean(importantMatch);
+  const priority = isHighPriority ? "high" : "normal";
 
   return {
     title,
