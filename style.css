@@ -1,14 +1,14 @@
 :root {
   --background: #0f1115;
-  --background-accent: #0f1115;
-  --surface-low: #151a22;
-  --surface-card: #1c2330;
-  --surface-hover: #242d3c;
-  --text: #e8edf5;
-  --text-muted: #9eabbe;
-  --chip-bg: rgba(111, 152, 216, 0.18);
-  --primary: #6f98d8;
-  --line-soft: rgba(128, 147, 176, 0.34);
+  --background-accent: #0b0d11;
+  --surface-low: #161b24;
+  --surface-card: #1b212c;
+  --surface-hover: #242c39;
+  --text: #edf2fb;
+  --text-muted: #a2adbe;
+  --chip-bg: rgba(110, 154, 227, 0.2);
+  --primary: #78a6ea;
+  --line-soft: rgba(137, 154, 184, 0.34);
   --focus-chip-bg: rgba(22, 27, 36, 0.92);
   --focus-chip-border: rgba(128, 147, 176, 0.34);
   --focus-chip-text: rgba(225, 233, 244, 0.92);
@@ -27,22 +27,23 @@ body {
   min-height: 100vh;
   font-family: "Manrope", sans-serif;
   color: var(--text);
-  background: var(--background);
+  background: radial-gradient(circle at top left, var(--background) 0%, var(--background-accent) 70%);
   -webkit-font-smoothing: antialiased;
-  text-rendering: geometricPrecision;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body.dark {
   --background: #0f1115;
-  --background-accent: #0f1115;
-  --surface-low: #141a23;
-  --surface-card: #1b2230;
-  --surface-hover: #252e3d;
+  --background-accent: #0b0d11;
+  --surface-low: #151a22;
+  --surface-card: #1b212b;
+  --surface-hover: #252d39;
   --text: #e8edf5;
-  --text-muted: #9ba8bc;
-  --chip-bg: rgba(111, 152, 216, 0.2);
-  --primary: #7fa6e4;
+  --text-muted: #a0adbf;
+  --chip-bg: rgba(110, 154, 227, 0.2);
+  --primary: #7da8ea;
   --line-soft: rgba(133, 151, 179, 0.34);
   --focus-chip-bg: rgba(22, 27, 36, 0.92);
   --focus-chip-border: rgba(133, 151, 179, 0.3);
@@ -162,7 +163,7 @@ h1 {
 .import-btn {
   border: 1px solid color-mix(in srgb, var(--line-soft) 40%, transparent);
   border-radius: 12px;
-  background: var(--surface-low);
+  background: color-mix(in srgb, var(--surface-low) 94%, #121720 6%);
   color: var(--text);
   font: inherit;
   font-size: 0.9rem;
@@ -199,9 +200,9 @@ h1 {
 }
 
 #task-form button[type="submit"] {
-  background: color-mix(in srgb, var(--primary) 26%, var(--surface-low));
+  background: color-mix(in srgb, var(--primary) 30%, var(--surface-low));
   color: color-mix(in srgb, var(--text) 94%, white);
-  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 52%, transparent);
 }
 
 #task-form button[type="submit"]:hover {
@@ -209,7 +210,7 @@ h1 {
 }
 
 #ia-generate-btn {
-  background: color-mix(in srgb, var(--surface-low) 94%, var(--surface-card));
+  background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
   color: color-mix(in srgb, var(--text-muted) 92%, white 8%);
 }
 
@@ -276,9 +277,9 @@ h1 {
   gap: 0.65rem;
   padding: 0.6rem;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--surface-low) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--line-soft) 42%, transparent);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+  background: color-mix(in srgb, var(--surface-low) 76%, #0f1218 24%);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 54%, transparent);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
 }
 
 .column-head {
@@ -295,16 +296,16 @@ h1 {
   font-weight: 760;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
 }
 
 .column[data-column="inprogress"] h2 {
-  color: color-mix(in srgb, #8cb6ff 84%, var(--text));
+  color: color-mix(in srgb, #9dc1ff 86%, var(--text));
 }
 
 .column[data-column="inprogress"] {
-  border-color: color-mix(in srgb, #5f86ca 56%, transparent);
-  box-shadow: 0 10px 24px rgba(27, 43, 68, 0.38);
+  border-color: color-mix(in srgb, #79a4ee 58%, transparent);
+  box-shadow: 0 12px 28px rgba(23, 42, 74, 0.32);
 }
 
 .column[data-column="done"] h2 {
@@ -313,27 +314,27 @@ h1 {
 }
 
 .column[data-column="done"] {
-  background: #10151d;
-  border-color: rgba(88, 103, 126, 0.24);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: #11161e;
+  border-color: rgba(88, 103, 126, 0.2);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
 }
 
 .task-list {
   min-height: 520px;
-  background: color-mix(in srgb, var(--surface-card) 90%, #11161f 10%);
-  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-card) 92%, #11161f 8%);
+  border-radius: 14px;
   padding: 0.82rem;
   display: flex;
   flex-direction: column;
   gap: 0.72rem;
   position: relative;
-  border: 1px solid color-mix(in srgb, var(--line-soft) 58%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 52%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .column[data-column="done"] .task-list {
-  background: #141922;
-  border-color: rgba(96, 111, 132, 0.24);
+  background: #131923;
+  border-color: rgba(96, 111, 132, 0.2);
 }
 
 .task-list.drag-over {
@@ -341,11 +342,11 @@ h1 {
 }
 
 .task {
-  background: var(--surface-card);
+  background: color-mix(in srgb, var(--surface-card) 96%, #161b25 4%);
   border-radius: 11px;
   padding: 0.92rem;
   cursor: grab;
-  border: 1px solid color-mix(in srgb, var(--line-soft) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 30%, transparent);
   transition: transform 0.16s ease, opacity 0.18s ease, background-color 0.18s ease;
 }
 
@@ -354,11 +355,12 @@ h1 {
 }
 
 .column[data-column="done"] .task {
-  background: #1a202a;
+  background: #1a212c;
 }
 
 .column[data-column="done"] .task-title {
-  color: color-mix(in srgb, var(--text-muted) 72%, white 8%);
+  color: color-mix(in srgb, var(--text-muted) 74%, #dce5f5 26%);
+  opacity: 0.9;
 }
 
 .task.dragging {
@@ -393,7 +395,7 @@ h1 {
   margin: 0;
   font-size: 1rem;
   line-height: 1.34;
-  font-weight: 560;
+  font-weight: 600;
 }
 
 .task-title-btn {
@@ -943,7 +945,7 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 
 input::placeholder,
 textarea::placeholder {
-  color: color-mix(in srgb, var(--text-muted) 86%, white 8%);
+  color: color-mix(in srgb, var(--text-muted) 90%, white 10%);
   opacity: 1;
 }
 
