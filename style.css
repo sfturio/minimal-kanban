@@ -1,17 +1,17 @@
 :root {
-  --background: #f1f4ef;
-  --background-accent: #dce4da;
-  --surface-low: #dfe6dd;
-  --surface-card: #f7faf5;
-  --surface-hover: #fbfdf9;
-  --text: #22302a;
-  --text-muted: #66756d;
-  --chip-bg: rgba(74, 96, 83, 0.1);
-  --primary: #4f6659;
-  --line-soft: rgba(110, 128, 119, 0.3);
-  --focus-chip-bg: rgba(231, 236, 229, 0.86);
-  --focus-chip-border: rgba(110, 128, 119, 0.3);
-  --focus-chip-text: rgba(38, 49, 43, 0.86);
+  --background: #0f1115;
+  --background-accent: #0f1115;
+  --surface-low: #151a22;
+  --surface-card: #1c2330;
+  --surface-hover: #242d3c;
+  --text: #e8edf5;
+  --text-muted: #9eabbe;
+  --chip-bg: rgba(111, 152, 216, 0.18);
+  --primary: #6f98d8;
+  --line-soft: rgba(128, 147, 176, 0.34);
+  --focus-chip-bg: rgba(22, 27, 36, 0.92);
+  --focus-chip-border: rgba(128, 147, 176, 0.34);
+  --focus-chip-text: rgba(225, 233, 244, 0.92);
 }
 
 * {
@@ -27,27 +27,26 @@ body {
   min-height: 100vh;
   font-family: "Manrope", sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--background-accent) 82%, white) 0%, transparent 36%),
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--background-accent) 68%, white) 0%, transparent 32%),
-    var(--background);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 body.dark {
-  --background: #181f1b;
-  --background-accent: #2b3831;
-  --surface-low: #202923;
-  --surface-card: #262f29;
-  --surface-hover: #2d3831;
-  --text: #dbe4dc;
-  --text-muted: #a1aea6;
-  --chip-bg: rgba(183, 203, 186, 0.16);
-  --primary: #bccfbf;
-  --line-soft: rgba(154, 170, 161, 0.3);
-  --focus-chip-bg: rgba(40, 51, 45, 0.85);
-  --focus-chip-border: rgba(154, 170, 161, 0.24);
-  --focus-chip-text: rgba(223, 233, 225, 0.9);
+  --background: #0f1115;
+  --background-accent: #0f1115;
+  --surface-low: #141a23;
+  --surface-card: #1b2230;
+  --surface-hover: #252e3d;
+  --text: #e8edf5;
+  --text-muted: #9ba8bc;
+  --chip-bg: rgba(111, 152, 216, 0.2);
+  --primary: #7fa6e4;
+  --line-soft: rgba(133, 151, 179, 0.34);
+  --focus-chip-bg: rgba(22, 27, 36, 0.92);
+  --focus-chip-border: rgba(133, 151, 179, 0.3);
+  --focus-chip-text: rgba(225, 233, 244, 0.92);
 }
 
 .material-symbols-outlined {
@@ -95,17 +94,17 @@ h1 {
 .subtitle {
   margin: 0.35rem 0 0;
   font-size: 0.9rem;
-  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 90%, white 10%);
 }
 
 .auth-status {
   margin: 0.3rem 0 0;
   font-size: 0.8rem;
-  color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 86%, white 8%);
 }
 
 #board-name {
-  color: color-mix(in srgb, var(--primary) 88%, var(--text));
+  color: color-mix(in srgb, var(--primary) 96%, var(--text));
   font-weight: 800;
 }
 
@@ -161,7 +160,7 @@ h1 {
 .task-form button,
 .ghost-btn,
 .import-btn {
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--line-soft) 40%, transparent);
   border-radius: 12px;
   background: var(--surface-low);
   color: var(--text);
@@ -190,18 +189,28 @@ h1 {
 
 .task-form button {
   font-weight: 650;
-  color: color-mix(in srgb, var(--primary) 86%, var(--text));
+  color: color-mix(in srgb, var(--text-muted) 88%, white 8%);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .task-form button:hover {
-  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+  background: color-mix(in srgb, var(--surface-low) 64%, var(--surface-card));
+}
+
+#task-form button[type="submit"] {
+  background: color-mix(in srgb, var(--primary) 26%, var(--surface-low));
+  color: color-mix(in srgb, var(--text) 94%, white);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+#task-form button[type="submit"]:hover {
+  background: color-mix(in srgb, var(--primary) 34%, var(--surface-low));
 }
 
 #ia-generate-btn {
-  background: color-mix(in srgb, var(--surface-low) 88%, var(--surface-card));
-  color: color-mix(in srgb, var(--text-muted) 82%, var(--primary));
+  background: color-mix(in srgb, var(--surface-low) 94%, var(--surface-card));
+  color: color-mix(in srgb, var(--text-muted) 92%, white 8%);
 }
 
 .data-actions {
@@ -265,6 +274,11 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  padding: 0.6rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-low) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 42%, transparent);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
 }
 
 .column-head {
@@ -285,27 +299,41 @@ h1 {
 }
 
 .column[data-column="inprogress"] h2 {
-  color: color-mix(in srgb, #4d70a6 78%, var(--text-muted));
+  color: color-mix(in srgb, #8cb6ff 84%, var(--text));
+}
+
+.column[data-column="inprogress"] {
+  border-color: color-mix(in srgb, #5f86ca 56%, transparent);
+  box-shadow: 0 10px 24px rgba(27, 43, 68, 0.38);
 }
 
 .column[data-column="done"] h2 {
-  color: color-mix(in srgb, var(--text-muted) 76%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 68%, transparent);
+  opacity: 0.72;
+}
+
+.column[data-column="done"] {
+  background: #10151d;
+  border-color: rgba(88, 103, 126, 0.24);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .task-list {
   min-height: 520px;
-  background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
+  background: color-mix(in srgb, var(--surface-card) 90%, #11161f 10%);
   border-radius: 16px;
   padding: 0.82rem;
   display: flex;
   flex-direction: column;
   gap: 0.72rem;
   position: relative;
-  border: 1px solid color-mix(in srgb, var(--line-soft) 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-soft) 58%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .column[data-column="done"] .task-list {
-  background: color-mix(in srgb, var(--surface-low) 86%, var(--surface-card));
+  background: #141922;
+  border-color: rgba(96, 111, 132, 0.24);
 }
 
 .task-list.drag-over {
@@ -323,6 +351,14 @@ h1 {
 
 .task:hover {
   background: var(--surface-hover);
+}
+
+.column[data-column="done"] .task {
+  background: #1a202a;
+}
+
+.column[data-column="done"] .task-title {
+  color: color-mix(in srgb, var(--text-muted) 72%, white 8%);
 }
 
 .task.dragging {
@@ -380,7 +416,7 @@ h1 {
   line-height: 1;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--primary) 86%, var(--text));
+  color: color-mix(in srgb, var(--primary) 82%, var(--text));
   background: var(--chip-bg);
   font-weight: 720;
 }
@@ -572,8 +608,8 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(7, 10, 8, 0.44);
-  backdrop-filter: blur(4px);
+  background: rgba(7, 10, 15, 0.62);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,8 +625,8 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 .boards-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(7, 10, 8, 0.24);
-  backdrop-filter: blur(3px);
+  background: rgba(7, 10, 15, 0.5);
+  backdrop-filter: blur(1px);
   z-index: 45;
 }
 
@@ -837,7 +873,7 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 .ai-modal p {
   margin: 0.45rem 0 0.76rem;
   font-size: 0.9rem;
-  color: color-mix(in srgb, var(--text-muted) 82%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 90%, white 8%);
 }
 
 .ai-modal textarea {
@@ -903,6 +939,12 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
   min-height: 1.1rem;
   font-size: 0.78rem;
   color: #b46a6a;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 86%, white 8%);
+  opacity: 1;
 }
 
 .task-modal-fields {
