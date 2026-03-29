@@ -207,13 +207,13 @@ h1 {
 }
 
 #task-form button[type="submit"] {
-  background: #f2f4f7;
-  color: #12151a;
-  border-color: #f2f4f7;
+  background: var(--text);
+  color: var(--background);
+  border-color: var(--text);
 }
 
 #task-form button[type="submit"]:hover {
-  background: #ffffff;
+  background: color-mix(in srgb, var(--text) 92%, white 8%);
 }
 
 #ia-generate-btn {
