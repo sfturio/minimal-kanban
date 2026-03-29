@@ -380,6 +380,37 @@ body.dark #ia-generate-btn:hover {
   color: color-mix(in srgb, var(--text-muted) 80%, var(--text));
 }
 
+.help-actions {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.help-export-note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--text-muted) 84%, var(--text));
+}
+
+.help-export-btn {
+  border: none;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-low) 86%, var(--surface-card));
+  color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 660;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.help-export-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 74%, var(--surface-card));
+  color: var(--text);
+}
+
 .column {
   display: flex;
   flex-direction: column;

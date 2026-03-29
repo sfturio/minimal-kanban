@@ -26,6 +26,7 @@ const boardName = document.getElementById("board-name");
 const helpToggleButton = document.getElementById("help-toggle");
 const helpModalOverlay = document.getElementById("help-modal-overlay");
 const helpCloseButton = document.getElementById("help-close-btn");
+const helpExportPromptButton = document.getElementById("help-export-prompt-btn");
 
 const boardToggleButton = document.getElementById("board-toggle");
 const boardsOverlay = document.getElementById("boards-overlay");
@@ -91,6 +92,7 @@ themeToggleButton?.addEventListener("click", toggleTheme);
 focusToggleButton?.addEventListener("click", toggleFocusMode);
 helpToggleButton?.addEventListener("click", toggleHelpSection);
 helpCloseButton?.addEventListener("click", closeHelpModal);
+helpExportPromptButton?.addEventListener("click", onCopyPromptTemplate);
 helpModalOverlay?.addEventListener("click", onHelpOverlayClick);
 clearColumnButtons.forEach((button) => {
   button.addEventListener("click", onClearColumnClick);
@@ -996,6 +998,48 @@ function closeHelpModal() {
 function onHelpOverlayClick(event) {
   if (event.target === helpModalOverlay) {
     closeHelpModal();
+  }
+}
+
+async function onCopyPromptTemplate() {
+  const content = `Transforme a ideia abaixo em tarefas acionáveis para Kanban.
+
+Regras:
+- Separe tarefas usando ";"
+- Comece com verbos (criar, implementar, corrigir, adicionar)
+- Use:
+  ! = mover para "Em andamento"
+  !! = alta prioridade
+  ( ) = categoria
+  @ = responsável
+  # = tags
+  + = data (YYYY-MM-DD)
+- Mantenha tarefas curtas
+- Sem explicações
+
+Exemplo:
+!criar API (manhã) @joao #backend +2026-04-05
+
+Ideia:
+Quero organizar minha semana para avançar no produto, melhorar a captação de clientes e manter consistência de saúde.
+`;
+  const button = helpExportPromptButton;
+  if (!button) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(content);
+    const originalLabel = button.textContent || "Copiar prompt para IA";
+    button.textContent = "Copiado!";
+    button.disabled = true;
+    window.setTimeout(() => {
+      button.textContent = originalLabel;
+      button.disabled = false;
+    }, 1200);
+  } catch {
+    // Fallback: mantém o prompt selecionável via prompt nativo
+    window.prompt("Copie o prompt:", content);
   }
 }
 
