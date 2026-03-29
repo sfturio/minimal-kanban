@@ -48,14 +48,10 @@ Exemplo:
 fluxo-essencial
 ├─ index.html
 ├─ style.css
-├─ agents/
-│  ├─ kanban.prompt.js
-│  ├─ design-ui-designer.md
-│  ├─ design-ux-architect.md
-│  ├─ engineering-frontend-developer.md
-│  └─ product-manager.md
 └─ src/
    ├─ app.js
+   ├─ config/
+   │  └─ kanban.prompt.js
    ├─ state/
    │  ├─ app.state.js
    │  ├─ board.state.js
