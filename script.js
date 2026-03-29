@@ -221,8 +221,13 @@ function normalizeTask(task) {
     id: task.id || crypto.randomUUID(),
     title: String(task.title || "").trim(),
     description: String(task.description || ""),
-    category: String(task.category || inferCategory(task.description || "")).trim(),
+    category: normalizeCategory(task.category, task.description),
+    assignee: typeof task.assignee === "string" ? task.assignee.trim() : null,
+    tags: Array.isArray(task.tags) ? task.tags.filter(Boolean) : [],
+    deadline: typeof task.deadline === "string" ? task.deadline.trim() : null,
     status: COLUMNS.includes(task.status) ? task.status : "todo",
+    priority: task.priority === "high" ? "high" : task.priority === "medium" ? "medium" : "normal",
+    createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
   };
 }
 
@@ -718,51 +723,100 @@ function getExamplePlanInput() {
 }
 
 function gerarTasksIA(text) {
-  const plannedTitles = text
-    .split(";")
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
+  const plannedTasks = parseTasks(text);
 
-  if (plannedTitles.length === 0) {
+  if (plannedTasks.length === 0) {
     return 0;
   }
-
-  const plannedTasks = plannedTitles
-    .map(parsePlannedTask)
-    .filter((task) => task.title.length > 0)
-    .map((task) => ({
-      id: crypto.randomUUID(),
-      title: task.title,
-      description: task.category,
-      category: task.category,
-      status: "todo",
-    }));
 
   tasks = [...plannedTasks, ...tasks];
   saveTasks();
   render();
 
-  console.log("Planejando com IA:", plannedTitles);
+  console.log("Planejando com IA:", plannedTasks);
   return plannedTasks.length;
 }
 
-function parsePlannedTask(rawText) {
-  const input = String(rawText || "").trim();
-  const match = input.match(/^(.*)\s+\(([^)]+)\)\s*$/);
+function parseTasks(input) {
+  const rawItems = String(input || "")
+    .split(";")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 
-  if (!match) {
+  return rawItems
+    .map(parseTaskItem)
+    .filter((task) => task.title.length > 0)
+    .map((task) => ({
+      id: crypto.randomUUID(),
+      title: task.title,
+      description: task.category || "",
+      category: task.category,
+      assignee: task.assignee,
+      tags: task.tags,
+      deadline: task.deadline,
+      status: task.column === "em_andamento" ? "inprogress" : "todo",
+      priority: task.priority,
+      createdAt: task.createdAt,
+    }));
+}
+
+function parseTaskItem(rawText) {
+  const trimmed = String(rawText || "").trim();
+  if (!trimmed) {
     return {
-      title: input,
-      category: "",
+      title: "",
+      column: "proximos",
+      category: null,
+      assignee: null,
+      tags: [],
+      deadline: null,
+      priority: "normal",
+      createdAt: new Date(),
     };
   }
 
-  const title = match[1].trim();
-  const category = match[2].trim();
+  const priorityMatch = trimmed.match(/^!+/);
+  const priorityCount = priorityMatch ? priorityMatch[0].length : 0;
+  let withoutPriority = trimmed.replace(/^!+/, "").trim();
+
+  const categoryMatch = withoutPriority.match(/^(.*)\(([^)]+)\)\s*$/);
+  const baseText = categoryMatch ? categoryMatch[1].trim() : withoutPriority;
+  const category = categoryMatch ? categoryMatch[2].trim() : null;
+
+  const assigneeMatch = baseText.match(/@([^\s#\+]+)/);
+  const assignee = assigneeMatch ? assigneeMatch[1].trim() : null;
+
+  const tags = [];
+  const tagMatches = baseText.match(/#([^\s@+\#]+)/g) || [];
+  tagMatches.forEach((match) => {
+    const value = match.slice(1).trim();
+    if (value && !tags.includes(value)) {
+      tags.push(value);
+    }
+  });
+
+  const deadlineMatch = baseText.match(/\+([^\s@#\+]+)/);
+  const deadline = deadlineMatch ? deadlineMatch[1].trim() : null;
+
+  let title = baseText
+    .replace(/@([^\s#\+]+)/g, "")
+    .replace(/#([^\s@+\#]+)/g, "")
+    .replace(/\+([^\s@#\+]+)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  const isPriority = priorityCount >= 1;
+  const priority = priorityCount >= 2 ? "high" : isPriority ? "medium" : "normal";
 
   return {
     title,
-    category,
+    column: isPriority ? "em_andamento" : "proximos",
+    category: category && category.length > 0 ? category : null,
+    assignee,
+    tags,
+    deadline,
+    priority,
+    createdAt: new Date(),
   };
 }
 
@@ -833,6 +887,16 @@ function inferCategory(description) {
   return value;
 }
 
+function normalizeCategory(category, description) {
+  if (typeof category === "string") {
+    const value = category.trim();
+    return value.length > 0 ? value : null;
+  }
+
+  const fromDescription = inferCategory(description || "");
+  return fromDescription.length > 0 ? fromDescription : null;
+}
+
 function onClearColumnClick(event) {
   const target = event.currentTarget;
   if (!(target instanceof HTMLElement)) {
@@ -895,7 +959,8 @@ function render() {
 
 function createTaskElement(task) {
   const card = document.createElement("article");
-  card.className = `task${task.status === "done" ? " done" : ""}`;
+  const priorityClass = task.priority === "high" ? " priority-high" : task.priority === "medium" ? " priority-medium" : "";
+  card.className = `task${task.status === "done" ? " done" : ""}${priorityClass}`;
   card.draggable = true;
   card.dataset.id = task.id;
 
