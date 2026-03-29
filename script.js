@@ -6,6 +6,9 @@ const THEME_KEY = "kanban.theme.v1";
 const FOCUS_KEY = "kanban.focus.v1";
 const COLUMNS = ["todo", "inprogress", "done"];
 const DEFAULT_BOARD_ID = "principal";
+const SUPABASE_URL = "https://gytlcnjscwasycgnyzhx.supabase.co";
+const SUPABASE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5dGxjbmpzY3dhc3ljZ255emh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NTg4NzUsImV4cCI6MjA5MDMzNDg3NX0.3xrMZKIO1ZQUhg8TpKQ753DGOUJ6pqNEzcSYyFSqVtM";
 
 let boards = loadBoards();
 let activeBoardId = loadActiveBoardId();
@@ -17,6 +20,11 @@ let deleteConfirmTaskId = null;
 let editingBoardId = null;
 let deleteConfirmBoardId = null;
 let clearConfirmColumn = null;
+let supabaseClient = null;
+let currentUser = null;
+let authMode = "signin";
+let cloudSyncTimer = null;
+let isApplyingCloudSnapshot = false;
 
 const form = document.getElementById("task-form");
 const titleInput = document.getElementById("task-title");
@@ -44,6 +52,20 @@ const focusLabel = document.getElementById("focus-label");
 const clearColumnButtons = document.querySelectorAll('[data-action="clear-column"]');
 const exportButton = document.getElementById("export-btn");
 const importInput = document.getElementById("import-input");
+const authToggleButton = document.getElementById("auth-toggle");
+const authStatus = document.getElementById("auth-status");
+const authModalOverlay = document.getElementById("auth-modal-overlay");
+const authCloseButton = document.getElementById("auth-close-btn");
+const authCancelButton = document.getElementById("auth-cancel-btn");
+const authForm = document.getElementById("auth-form");
+const authEmailInput = document.getElementById("auth-email");
+const authPasswordInput = document.getElementById("auth-password");
+const authModeButton = document.getElementById("auth-mode-btn");
+const authToggleText = document.getElementById("auth-toggle-text");
+const authSubmitButton = document.getElementById("auth-submit-btn");
+const authError = document.getElementById("auth-error");
+const authModalTitle = document.getElementById("auth-modal-title");
+const authModalSubtitle = document.getElementById("auth-modal-subtitle");
 
 form.addEventListener("submit", onCreateTask);
 iaGenerateButton?.addEventListener("click", openAIPlanningModal);
@@ -71,9 +93,16 @@ clearColumnButtons.forEach((button) => {
 });
 exportButton?.addEventListener("click", onExportData);
 importInput?.addEventListener("change", onImportData);
+authToggleButton?.addEventListener("click", onAuthToggleClick);
+authCloseButton?.addEventListener("click", closeAuthModal);
+authCancelButton?.addEventListener("click", closeAuthModal);
+authModeButton?.addEventListener("click", toggleAuthMode);
+authForm?.addEventListener("submit", onAuthSubmit);
+authModalOverlay?.addEventListener("click", onAuthOverlayClick);
 
 initTheme();
 initFocusMode();
+initAuth();
 setupDropZones();
 updateBoardName();
 renderBoardsPanel();
@@ -164,13 +193,16 @@ function loadBoards() {
 
 function saveBoards() {
   localStorage.setItem(BOARDS_KEY, JSON.stringify(boards));
+  scheduleCloudSync();
 }
 
 function loadActiveBoardId() {
-  const stored = localStorage.getItem(ACTIVE_BOARD_KEY);
+  const legacyKey = "kanban.board.active.v1";
+  const stored = localStorage.getItem(ACTIVE_BOARD_KEY) || localStorage.getItem(legacyKey);
   const valid = boards.find((board) => board.id === stored);
   const active = valid ? valid.id : boards[0].id;
   localStorage.setItem(ACTIVE_BOARD_KEY, active);
+  localStorage.removeItem(legacyKey);
   return active;
 }
 
@@ -211,6 +243,28 @@ function loadTasksForBoard(boardId) {
 
 function saveTasks() {
   localStorage.setItem(taskStorageKey(activeBoardId), JSON.stringify(tasks));
+  scheduleCloudSync();
+}
+
+function isLoggedIn() {
+  return Boolean(currentUser && supabaseClient);
+}
+
+function scheduleCloudSync() {
+  if (!isLoggedIn() || isApplyingCloudSnapshot) {
+    return;
+  }
+
+  if (cloudSyncTimer) {
+    clearTimeout(cloudSyncTimer);
+  }
+
+  cloudSyncTimer = setTimeout(() => {
+    cloudSyncTimer = null;
+    syncAllToCloud().catch((error) => {
+      console.error("Erro ao sincronizar com a nuvem:", error);
+    });
+  }, 350);
 }
 
 function normalizeTask(task) {
@@ -648,6 +702,11 @@ function onGlobalKeydown(event) {
     return;
   }
 
+  if (authModalOverlay && !authModalOverlay.hidden) {
+    closeAuthModal();
+    return;
+  }
+
   if (clearConfirmColumn) {
     clearConfirmColumn = null;
     updateClearColumnButtons();
@@ -661,6 +720,7 @@ function onVisibilityChange() {
 
   closeAIPlanningModal();
   closeBoardsPanel();
+  closeAuthModal();
   clearConfirmColumn = null;
   updateClearColumnButtons();
 }
@@ -668,7 +728,8 @@ function onVisibilityChange() {
 function updatePageLock() {
   const aiOpen = aiModalOverlay && !aiModalOverlay.hidden;
   const boardsOpen = boardsOverlay && !boardsOverlay.hidden;
-  document.body.style.overflow = aiOpen || boardsOpen ? "hidden" : "";
+  const authOpen = authModalOverlay && !authModalOverlay.hidden;
+  document.body.style.overflow = aiOpen || boardsOpen || authOpen ? "hidden" : "";
 }
 
 function inferCategory(description) {
@@ -1071,6 +1132,315 @@ function lastIndexOfStatus(list, status) {
     }
   }
   return -1;
+}
+
+function initAuth() {
+  if (!window.supabase?.createClient) {
+    if (authToggleButton) {
+      authToggleButton.disabled = true;
+      authToggleButton.textContent = "Entrar";
+      authToggleButton.title = "Autenticação indisponível";
+    }
+    setAuthStatus("Convidado");
+    return;
+  }
+
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  supabaseClient.auth.getSession().then(({ data }) => {
+    handleAuthState(data?.session?.user || null).catch((error) => {
+      console.error("Erro ao iniciar sessão:", error);
+    });
+  });
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    handleAuthState(session?.user || null).catch((error) => {
+      console.error("Erro ao atualizar sessão:", error);
+    });
+  });
+}
+
+function onAuthToggleClick() {
+  if (!supabaseClient) {
+    return;
+  }
+
+  if (currentUser) {
+    supabaseClient.auth.signOut();
+    return;
+  }
+
+  openAuthModal();
+}
+
+function openAuthModal() {
+  if (!authModalOverlay) {
+    return;
+  }
+
+  updateAuthModal();
+  authModalOverlay.hidden = false;
+  updatePageLock();
+  authEmailInput?.focus();
+}
+
+function closeAuthModal() {
+  if (authModalOverlay) {
+    authModalOverlay.hidden = true;
+  }
+  if (authError) {
+    authError.textContent = "";
+  }
+  updatePageLock();
+}
+
+function onAuthOverlayClick(event) {
+  if (event.target === authModalOverlay) {
+    closeAuthModal();
+  }
+}
+
+function toggleAuthMode() {
+  authMode = authMode === "signin" ? "signup" : "signin";
+  updateAuthModal();
+}
+
+function updateAuthModal() {
+  if (!authModalTitle || !authModalSubtitle || !authModeButton || !authToggleText || !authSubmitButton) {
+    return;
+  }
+
+  const isSignup = authMode === "signup";
+  authModalTitle.textContent = isSignup ? "Criar conta" : "Entrar";
+  authModalSubtitle.textContent = isSignup
+    ? "Crie sua conta para sincronizar suas tarefas."
+    : "Acesse sua conta para sincronizar suas tarefas.";
+  authToggleText.textContent = isSignup ? "Já tem conta?" : "Ainda não tem conta?";
+  authModeButton.textContent = isSignup ? "Entrar" : "Criar conta";
+  authSubmitButton.textContent = isSignup ? "Criar conta" : "Entrar";
+}
+
+async function onAuthSubmit(event) {
+  event.preventDefault();
+
+  if (!supabaseClient) {
+    return;
+  }
+
+  const email = authEmailInput?.value.trim() || "";
+  const password = authPasswordInput?.value.trim() || "";
+  if (!email || !password) {
+    return;
+  }
+
+  if (authError) {
+    authError.textContent = "";
+  }
+
+  const { error } =
+    authMode === "signup"
+      ? await supabaseClient.auth.signUp({ email, password })
+      : await supabaseClient.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    if (authError) {
+      authError.textContent = error.message;
+    }
+    return;
+  }
+
+  closeAuthModal();
+}
+
+async function handleAuthState(user) {
+  currentUser = user;
+
+  if (authToggleButton) {
+    authToggleButton.textContent = user ? "Sair" : "Entrar";
+  }
+  setAuthStatus(user?.email || "Convidado");
+
+  if (!user) {
+    return;
+  }
+
+  const pulled = await pullCloudToLocal();
+  if (!pulled) {
+    await syncAllToCloud();
+  }
+}
+
+function setAuthStatus(text) {
+  if (authStatus) {
+    authStatus.textContent = text || "Convidado";
+  }
+}
+
+function getAllLocalTasks() {
+  return boards.flatMap((board) =>
+    loadTasksForBoard(board.id).map((task) => ({
+      ...normalizeTask(task),
+      boardId: board.id,
+    })),
+  );
+}
+
+async function pullCloudToLocal() {
+  if (!isLoggedIn()) {
+    return false;
+  }
+
+  const { data: cloudBoards, error: boardsError } = await supabaseClient
+    .from("boards")
+    .select("id,name,created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: true });
+
+  if (boardsError) {
+    console.error("Erro ao carregar tabelas da nuvem:", boardsError.message);
+    return false;
+  }
+
+  if (!Array.isArray(cloudBoards) || cloudBoards.length === 0) {
+    return false;
+  }
+
+  const { data: cloudTasks, error: tasksError } = await supabaseClient
+    .from("tasks")
+    .select("id,board_id,title,description,category,status,created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: true });
+
+  if (tasksError) {
+    console.error("Erro ao carregar tarefas da nuvem:", tasksError.message);
+    return false;
+  }
+
+  const normalizedBoards = cloudBoards
+    .map((board) => ({
+      id: String(board.id || "").trim(),
+      name: String(board.name || "").trim(),
+    }))
+    .filter((board) => board.id && board.name);
+
+  if (normalizedBoards.length === 0) {
+    return false;
+  }
+
+  const tasksByBoard = new Map(normalizedBoards.map((board) => [board.id, []]));
+  const fallbackBoardId = normalizedBoards[0].id;
+  (Array.isArray(cloudTasks) ? cloudTasks : []).forEach((task) => {
+    const normalized = normalizeTask({
+      id: task.id,
+      title: task.title,
+      description: task.description || "",
+      category: task.category || "",
+      status: task.status || "todo",
+    });
+    const boardId = tasksByBoard.has(task.board_id) ? task.board_id : fallbackBoardId;
+    tasksByBoard.get(boardId).push(normalized);
+  });
+
+  isApplyingCloudSnapshot = true;
+  try {
+    const previousBoardIds = boards.map((board) => board.id);
+    boards = normalizedBoards;
+    localStorage.setItem(BOARDS_KEY, JSON.stringify(boards));
+
+    previousBoardIds.forEach((boardId) => {
+      if (!boards.some((board) => board.id === boardId)) {
+        localStorage.removeItem(taskStorageKey(boardId));
+      }
+    });
+
+    boards.forEach((board) => {
+      localStorage.setItem(taskStorageKey(board.id), JSON.stringify(tasksByBoard.get(board.id)));
+    });
+
+    const previousActiveId = String(activeBoardId || "").trim();
+    const nextActiveId = boards.some((board) => board.id === previousActiveId)
+      ? previousActiveId
+      : boards[0].id;
+    setActiveBoardId(nextActiveId);
+
+    tasks = loadTasksForBoard(activeBoardId).map(normalizeTask);
+    editingTaskId = null;
+    deleteConfirmTaskId = null;
+    clearConfirmColumn = null;
+    updateBoardName();
+    renderBoardsPanel();
+    updateClearColumnButtons();
+    render();
+  } finally {
+    isApplyingCloudSnapshot = false;
+  }
+
+  return true;
+}
+
+async function syncAllToCloud() {
+  if (!isLoggedIn()) {
+    return;
+  }
+
+  const boardsPayload = boards.map((board) => ({
+    id: board.id,
+    user_id: currentUser.id,
+    name: board.name,
+    created_at: new Date().toISOString(),
+  }));
+
+  if (boardsPayload.length > 0) {
+    const { error } = await supabaseClient.from("boards").upsert(boardsPayload, {
+      onConflict: "id",
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  if (boardsPayload.length === 0) {
+    await supabaseClient.from("boards").delete().eq("user_id", currentUser.id);
+  } else {
+    const boardIds = boardsPayload.map((item) => `"${item.id}"`).join(",");
+    await supabaseClient
+      .from("boards")
+      .delete()
+      .eq("user_id", currentUser.id)
+      .not("id", "in", `(${boardIds})`);
+  }
+
+  const allTasks = getAllLocalTasks();
+  const tasksPayload = allTasks.map((task) => ({
+    id: task.id,
+    user_id: currentUser.id,
+    board_id: task.boardId || activeBoardId,
+    title: task.title,
+    description: task.description || "",
+    category: task.category || "",
+    status: task.status || "todo",
+    created_at: new Date().toISOString(),
+  }));
+
+  if (tasksPayload.length > 0) {
+    const { error } = await supabaseClient.from("tasks").upsert(tasksPayload, {
+      onConflict: "id",
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  if (tasksPayload.length === 0) {
+    await supabaseClient.from("tasks").delete().eq("user_id", currentUser.id);
+  } else {
+    const taskIds = tasksPayload.map((item) => `"${item.id}"`).join(",");
+    await supabaseClient
+      .from("tasks")
+      .delete()
+      .eq("user_id", currentUser.id)
+      .not("id", "in", `(${taskIds})`);
+  }
 }
 
 function onExportData() {

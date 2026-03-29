@@ -83,6 +83,12 @@ h1 {
   color: color-mix(in srgb, var(--text-muted) 78%, transparent);
 }
 
+.auth-status {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
+}
+
 #board-name {
   color: color-mix(in srgb, var(--primary) 90%, var(--text));
   font-weight: 800;
@@ -103,6 +109,23 @@ h1 {
 
 body.dark .theme-btn:hover {
   background: rgba(199, 213, 183, 0.1);
+}
+
+.auth-btn {
+  border: none;
+  background: var(--surface-low);
+  color: color-mix(in srgb, var(--text) 88%, var(--primary));
+  padding: 0.42rem 0.8rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.auth-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 80%, var(--surface-card));
 }
 
 #board-toggle {
@@ -812,6 +835,62 @@ body.focus-mode .column[data-column="inprogress"] h2::after {
 
 .ai-modal textarea:focus {
   outline: 1px solid var(--line-soft);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--text-muted) 82%, transparent);
+}
+
+.auth-form input {
+  border: none;
+  border-radius: 12px;
+  background: var(--surface-low);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.65rem 0.75rem;
+  outline: 1px solid transparent;
+}
+
+.auth-form input:focus {
+  outline: 1px solid var(--line-soft);
+}
+
+.auth-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--text-muted) 78%, transparent);
+}
+
+.auth-toggle button {
+  border: none;
+  background: transparent;
+  color: color-mix(in srgb, var(--primary) 85%, var(--text));
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.auth-toggle button:hover {
+  text-decoration: underline;
+}
+
+.auth-error {
+  margin: 0;
+  min-height: 1.1rem;
+  font-size: 0.78rem;
+  color: #b46a6a;
 }
 
 .ai-modal-actions {

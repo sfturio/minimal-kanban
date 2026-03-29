@@ -16,9 +16,11 @@
       <div>
         <h1>Fluxo Essencial</h1>
         <p class="subtitle">Foco e fluxo diário · <span id="board-name">Principal</span></p>
+        <p id="auth-status" class="auth-status">Convidado</p>
       </div>
       <div class="header-actions">
         <button id="board-toggle" type="button" class="theme-btn" aria-label="Tabelas" aria-expanded="false">+</button>
+        <button id="auth-toggle" type="button" class="auth-btn">Entrar</button>
         <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
           <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
         </button>
@@ -100,6 +102,36 @@
     </aside>
   </div>
 
+  <div id="auth-modal-overlay" class="modal-overlay" hidden>
+    <section class="ai-modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <div class="ai-modal-head">
+        <h2 id="auth-modal-title">Entrar</h2>
+        <button id="auth-close-btn" type="button" class="icon-close" aria-label="Fechar modal">×</button>
+      </div>
+      <p id="auth-modal-subtitle">Acesse sua conta para sincronizar suas tarefas.</p>
+      <form id="auth-form" class="auth-form" autocomplete="off">
+        <label>
+          Email
+          <input id="auth-email" name="email" type="email" required />
+        </label>
+        <label>
+          Senha
+          <input id="auth-password" name="password" type="password" required minlength="6" />
+        </label>
+        <div class="auth-toggle">
+          <span id="auth-toggle-text">Ainda não tem conta?</span>
+          <button id="auth-mode-btn" type="button">Criar conta</button>
+        </div>
+        <div class="ai-modal-actions">
+          <button id="auth-cancel-btn" type="button" class="secondary">Cancelar</button>
+          <button id="auth-submit-btn" type="submit" class="primary">Entrar</button>
+        </div>
+        <p id="auth-error" class="auth-error" aria-live="polite"></p>
+      </form>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
