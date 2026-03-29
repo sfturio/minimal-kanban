@@ -732,7 +732,12 @@ function onCreateTask(event) {
       title,
       description,
       category: inferCategory(description),
+      assignee: null,
+      tags: [],
+      deadline: null,
       status: "todo",
+      priority: "normal",
+      createdAt: new Date(),
     });
   }
 
@@ -1055,8 +1060,6 @@ function updateClearColumnButtons() {
 }
 
 function render() {
-  const focusModeOn = document.body.classList.contains("focus-mode");
-
   COLUMNS.forEach((column) => {
     const list = document.getElementById(`${column}-list`);
     if (!list) {
@@ -1066,16 +1069,45 @@ function render() {
     list.innerHTML = "";
 
     const columnTasks = tasks.filter((task) => task.status === column);
-    const orderedTasks =
-      focusModeOn && column === "inprogress"
-        ? [
-            ...columnTasks.filter((task) => task.priority === "high"),
-            ...columnTasks.filter((task) => task.priority !== "high"),
-          ]
-        : columnTasks;
+    const orderedTasks = orderTasksForColumn(columnTasks);
 
     orderedTasks.forEach((task) => list.appendChild(createTaskElement(task)));
   });
+}
+
+function orderTasksForColumn(columnTasks) {
+  return [...columnTasks]
+    .map((task, index) => ({ task, index }))
+    .sort((a, b) => {
+      const aHigh = a.task.priority === "high";
+      const bHigh = b.task.priority === "high";
+
+      if (aHigh !== bHigh) {
+        return aHigh ? -1 : 1;
+      }
+
+      if (aHigh && bHigh) {
+        const aCreated = getTaskCreatedAtTimestamp(a.task);
+        const bCreated = getTaskCreatedAtTimestamp(b.task);
+        if (aCreated !== bCreated) {
+          return aCreated - bCreated;
+        }
+      }
+
+      return a.index - b.index;
+    })
+    .map((entry) => entry.task);
+}
+
+function getTaskCreatedAtTimestamp(task) {
+  if (task.createdAt instanceof Date) {
+    const time = task.createdAt.getTime();
+    return Number.isFinite(time) ? time : Number.MAX_SAFE_INTEGER;
+  }
+
+  const parsed = new Date(task.createdAt);
+  const time = parsed.getTime();
+  return Number.isFinite(time) ? time : Number.MAX_SAFE_INTEGER;
 }
 
 function createTaskElement(task) {
