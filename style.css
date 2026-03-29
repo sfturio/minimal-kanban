@@ -13,6 +13,7 @@
   --focus-chip-bg: rgba(255, 255, 255, 0.95);
   --focus-chip-border: #d1d8e5;
   --focus-chip-text: #162033;
+  --focus-dot: #b86f3d;
   --list-bg: #eef2f8;
   --list-done-bg: #e8edf4;
   --done-task-bg: #edf2f8;
@@ -71,6 +72,7 @@ body.dark {
   --focus-chip-bg: rgba(28, 30, 36, 0.92);
   --focus-chip-border: #3f434d;
   --focus-chip-text: #e5ebf5;
+  --focus-dot: #d98a52;
   --list-bg: #1c1e23;
   --list-done-bg: #181a1f;
   --done-task-bg: #1d1f25;
@@ -256,6 +258,11 @@ h1 {
   background: var(--surface-hover);
 }
 
+body.dark .task-form input {
+  background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
+  border-color: color-mix(in srgb, var(--line-soft) 42%, transparent);
+}
+
 #task-form button[type="submit"] {
   background: var(--text);
   color: var(--surface-card);
@@ -286,6 +293,10 @@ body.dark #task-form button[type="submit"]:hover {
 #ia-generate-btn {
   background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
   color: color-mix(in srgb, var(--text) 84%, var(--text-muted));
+}
+
+body.dark #ia-generate-btn {
+  border-color: color-mix(in srgb, var(--line-soft) 42%, transparent);
 }
 
 #ia-generate-btn:hover {
@@ -795,8 +806,8 @@ body:not(.dark) .task-delete-confirm .danger {
 }
 
 .focus-btn {
-  border: 1px solid var(--focus-chip-border);
-  background: var(--focus-chip-bg);
+  border: 1px solid color-mix(in srgb, var(--focus-chip-border) 72%, transparent);
+  background: color-mix(in srgb, var(--focus-chip-bg) 92%, transparent);
   backdrop-filter: blur(8px);
   border-radius: 18px;
   padding: 0.68rem 1.22rem;
@@ -807,27 +818,33 @@ body:not(.dark) .task-delete-confirm .danger {
   letter-spacing: 0.12em;
   font-size: 0.72rem;
   font-weight: 760;
-  color: var(--focus-chip-text);
+  color: color-mix(in srgb, var(--focus-chip-text) 88%, var(--text-muted));
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .focus-btn:hover {
-  background: color-mix(in srgb, var(--focus-chip-bg) 84%, var(--surface-card));
+  background: color-mix(in srgb, var(--focus-chip-bg) 86%, var(--surface-card));
+  border-color: color-mix(in srgb, var(--focus-chip-border) 64%, transparent);
 }
 
 .focus-btn.active {
   background: color-mix(in srgb, var(--focus-chip-bg) 88%, var(--surface-low));
-  border-color: color-mix(in srgb, var(--focus-chip-border) 88%, var(--primary));
-  color: color-mix(in srgb, var(--focus-chip-text) 90%, var(--primary));
+  border-color: color-mix(in srgb, var(--focus-chip-border) 72%, transparent);
+  color: color-mix(in srgb, var(--focus-chip-text) 86%, var(--text-muted));
 }
 
 .focus-btn .dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--primary);
-  opacity: 0.82;
+  background: var(--focus-dot);
+  opacity: 0.95;
+}
+
+.focus-btn.active .dot {
+  background: color-mix(in srgb, var(--text-muted) 72%, var(--focus-chip-border));
+  opacity: 0.85;
 }
 
 body.focus-mode .task {
@@ -861,7 +878,7 @@ body.focus-mode .focus-wrap {
 body.focus-mode .focus-btn {
   background: color-mix(in srgb, var(--focus-chip-bg) 92%, var(--surface-card));
   border-color: color-mix(in srgb, var(--focus-chip-border) 92%, var(--text));
-  color: var(--focus-chip-text);
+  color: color-mix(in srgb, var(--focus-chip-text) 88%, var(--text-muted));
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
 
@@ -1388,3 +1405,4 @@ textarea::placeholder {
     font-size: 1.04rem;
   }
 }
+
