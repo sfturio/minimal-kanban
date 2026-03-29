@@ -32,6 +32,11 @@
       <button id="ia-generate-btn" type="button">Planejar</button>
     </form>
 
+    <div class="data-actions">
+      <button id="export-btn" type="button" class="ghost-btn">Exportar</button>
+      <label class="import-btn">Importar<input id="import-input" type="file" accept="application/json" hidden /></label>
+    </div>
+
     <section class="board" aria-label="Fluxo Essencial">
       <article class="column" data-column="todo">
         <div class="column-head">
@@ -76,7 +81,7 @@
       <textarea id="ai-plan-input" rows="7" placeholder="Separe tarefas com ; Ex: revisar e-mails ; treino de peito ; estudar JavaScript. Dica: se usar (), vira categoria. Ex: estudar JavaScript (noite)"></textarea>
       <div class="ai-modal-actions">
         <button id="ai-cancel-btn" type="button" class="secondary">Cancelar</button>
-        <button id="ai-generate-confirm-btn" type="button" class="primary">Gerar tarefas</button>
+        <button id="ai-generate-confirm-btn" type="button" class="primary">Gerar tarefas &#10024;</button>
       </div>
     </section>
   </div>

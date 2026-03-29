@@ -42,6 +42,8 @@ const themeIcon = document.getElementById("theme-icon");
 const focusToggleButton = document.getElementById("focus-toggle");
 const focusLabel = document.getElementById("focus-label");
 const clearColumnButtons = document.querySelectorAll('[data-action="clear-column"]');
+const exportButton = document.getElementById("export-btn");
+const importInput = document.getElementById("import-input");
 
 form.addEventListener("submit", onCreateTask);
 iaGenerateButton?.addEventListener("click", openAIPlanningModal);
@@ -67,6 +69,8 @@ focusToggleButton?.addEventListener("click", toggleFocusMode);
 clearColumnButtons.forEach((button) => {
   button.addEventListener("click", onClearColumnClick);
 });
+exportButton?.addEventListener("click", onExportData);
+importInput?.addEventListener("change", onImportData);
 
 initTheme();
 initFocusMode();
@@ -1067,6 +1071,108 @@ function lastIndexOfStatus(list, status) {
     }
   }
   return -1;
+}
+
+function onExportData() {
+  const allTasks = boards.flatMap((board) =>
+    loadTasksForBoard(board.id).map((task) => ({
+      ...normalizeTask(task),
+      boardId: board.id,
+    })),
+  );
+
+  const exportPayload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    activeBoardId,
+    boards: boards.map((board) => ({
+      id: board.id,
+      name: board.name,
+    })),
+    tasks: allTasks,
+  };
+
+  const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "fluxo-essencial-backup.json";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function onImportData(event) {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const file = input.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if (!parsed || !Array.isArray(parsed.boards) || !Array.isArray(parsed.tasks)) {
+      throw new Error("Arquivo inválido");
+    }
+
+    const normalizedBoards = parsed.boards
+      .map((board) => ({
+        id: String(board?.id || "").trim(),
+        name: String(board?.name || "").trim(),
+      }))
+      .filter((board) => board.id && board.name);
+
+    if (normalizedBoards.length === 0) {
+      throw new Error("Arquivo sem tabelas válidas");
+    }
+
+    const boardIds = new Set(normalizedBoards.map((board) => board.id));
+    const groupedTasks = new Map(normalizedBoards.map((board) => [board.id, []]));
+
+    parsed.tasks.forEach((task) => {
+      const rawBoardId = String(task?.boardId || "").trim();
+      const boardId = boardIds.has(rawBoardId) ? rawBoardId : normalizedBoards[0].id;
+      groupedTasks.get(boardId).push(normalizeTask(task));
+    });
+
+    const previousBoards = boards.map((board) => board.id);
+    previousBoards.forEach((boardId) => {
+      localStorage.removeItem(taskStorageKey(boardId));
+    });
+
+    boards = normalizedBoards;
+    saveBoards();
+
+    normalizedBoards.forEach((board) => {
+      localStorage.setItem(taskStorageKey(board.id), JSON.stringify(groupedTasks.get(board.id)));
+    });
+
+    const requestedActiveId = String(parsed.activeBoardId || "").trim();
+    const nextActiveId = boardIds.has(requestedActiveId) ? requestedActiveId : normalizedBoards[0].id;
+    setActiveBoardId(nextActiveId);
+
+    tasks = loadTasksForBoard(activeBoardId).map(normalizeTask);
+    editingTaskId = null;
+    deleteConfirmTaskId = null;
+    clearConfirmColumn = null;
+
+    updateBoardName();
+    renderBoardsPanel();
+    updateClearColumnButtons();
+    render();
+  } catch (error) {
+    console.error("Erro ao importar dados:", error);
+  } finally {
+    input.value = "";
+  }
 }
 
 function escapeHtml(value) {
