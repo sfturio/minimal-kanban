@@ -22,6 +22,8 @@ const form = document.getElementById("task-form");
 const titleInput = document.getElementById("task-title");
 const descriptionInput = document.getElementById("task-description");
 const boardName = document.getElementById("board-name");
+const helpToggleButton = document.getElementById("help-toggle");
+const helpSection = document.getElementById("help-section");
 
 const boardToggleButton = document.getElementById("board-toggle");
 const boardsOverlay = document.getElementById("boards-overlay");
@@ -71,6 +73,7 @@ document.addEventListener("visibilitychange", onVisibilityChange);
 
 themeToggleButton?.addEventListener("click", toggleTheme);
 focusToggleButton?.addEventListener("click", toggleFocusMode);
+helpToggleButton?.addEventListener("click", toggleHelpSection);
 clearColumnButtons.forEach((button) => {
   button.addEventListener("click", onClearColumnClick);
 });
@@ -880,6 +883,21 @@ function updatePageLock() {
   const aiOpen = aiModalOverlay && !aiModalOverlay.hidden;
   const boardsOpen = boardsOverlay && !boardsOverlay.hidden;
   document.body.style.overflow = aiOpen || boardsOpen ? "hidden" : "";
+}
+
+function toggleHelpSection() {
+  if (!helpSection || !helpToggleButton) {
+    return;
+  }
+
+  const isHidden = helpSection.hasAttribute("hidden");
+  if (isHidden) {
+    helpSection.removeAttribute("hidden");
+    helpToggleButton.setAttribute("aria-expanded", "true");
+  } else {
+    helpSection.setAttribute("hidden", "");
+    helpToggleButton.setAttribute("aria-expanded", "false");
+  }
 }
 
 function inferCategory(description) {
