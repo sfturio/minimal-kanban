@@ -230,6 +230,23 @@ body.dark .task-form button:hover {
   text-transform: uppercase;
   color: color-mix(in srgb, var(--text) 75%, transparent);
 }
+.column[data-column="inprogress"] h2 {
+  color: #4a6fa5;
+}
+
+body.dark .column[data-column="inprogress"] h2 {
+  color: #7aa2d8;
+}
+
+.column[data-column="done"] h2 {
+  color: #2a2a2a;
+  opacity: 0.65;
+}
+
+body.dark .column[data-column="done"] h2 {
+  color: #7b7b7b;
+  opacity: 0.6;
+}
 
 .task-list {
   min-height: 520px;
@@ -240,6 +257,13 @@ body.dark .task-form button:hover {
   flex-direction: column;
   gap: 0.85rem;
   position: relative;
+}
+.column[data-column="done"] .task-list {
+  background: color-mix(in srgb, #2a2a2a 10%, var(--surface-low));
+}
+
+body.dark .column[data-column="done"] .task-list {
+  background: color-mix(in srgb, #2a2a2a 18%, var(--surface-low));
 }
 
 .task-list.drag-over {
