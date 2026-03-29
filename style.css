@@ -187,11 +187,16 @@ body.dark .task-form button:hover {
 }
 
 .help-section {
-  margin-top: 2rem;
+  margin-top: 1.2rem;
   padding: 1rem 1.2rem;
   border-radius: 14px;
   background: color-mix(in srgb, var(--surface-low) 92%, var(--surface-card));
   color: var(--text);
+  display: none;
+}
+
+.help-section.is-open {
+  display: block;
 }
 
 .help-section h2 {

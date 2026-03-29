@@ -890,14 +890,9 @@ function toggleHelpSection() {
     return;
   }
 
-  const isHidden = helpSection.hasAttribute("hidden");
-  if (isHidden) {
-    helpSection.removeAttribute("hidden");
-    helpToggleButton.setAttribute("aria-expanded", "true");
-  } else {
-    helpSection.setAttribute("hidden", "");
-    helpToggleButton.setAttribute("aria-expanded", "false");
-  }
+  const isOpen = helpSection.classList.contains("is-open");
+  helpSection.classList.toggle("is-open", !isOpen);
+  helpToggleButton.setAttribute("aria-expanded", String(!isOpen));
 }
 
 function inferCategory(description) {
