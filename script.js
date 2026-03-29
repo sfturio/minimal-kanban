@@ -1,4 +1,4 @@
-﻿const LEGACY_STORAGE_KEY = "kanban.tasks.v1";
+const LEGACY_STORAGE_KEY = "kanban.tasks.v1";
 const TASKS_KEY_PREFIX = "kanban.tasks.board.v2.";
 const BOARDS_KEY = "kanban.boards.v1";
 const ACTIVE_BOARD_KEY = "kanban.active-board.v1";
