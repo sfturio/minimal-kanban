@@ -103,6 +103,49 @@
     </aside>
   </div>
 
+  <div id="task-modal-overlay" class="modal-overlay" hidden>
+    <section class="ai-modal" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+      <div class="ai-modal-head">
+        <h2 id="task-modal-title">Editar tarefa</h2>
+        <button id="task-modal-close" type="button" class="icon-close" aria-label="Fechar edição">×</button>
+      </div>
+      <div class="task-modal-fields">
+        <label>
+          Título
+          <input id="task-edit-title" type="text" maxlength="120" />
+        </label>
+        <label>
+          Categoria
+          <input id="task-edit-category" type="text" maxlength="60" />
+        </label>
+        <label>
+          Responsável
+          <input id="task-edit-assignee" type="text" maxlength="60" />
+        </label>
+        <label>
+          Tags (separe por vírgula)
+          <input id="task-edit-tags" type="text" maxlength="120" />
+        </label>
+        <label>
+          Deadline
+          <input id="task-edit-deadline" type="text" maxlength="32" />
+        </label>
+        <label>
+          Prioridade
+          <select id="task-edit-priority">
+            <option value="normal">Normal</option>
+            <option value="medium">!</option>
+            <option value="high">!!</option>
+          </select>
+        </label>
+      </div>
+      <div class="ai-modal-actions">
+        <button id="task-modal-cancel" type="button" class="secondary">Cancelar</button>
+        <button id="task-modal-save" type="button" class="primary">Salvar</button>
+      </div>
+    </section>
+  </div>
+
   <div id="help-modal-overlay" class="modal-overlay" hidden>
     <section class="ai-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
       <div class="ai-modal-head">
@@ -112,6 +155,7 @@
       <ul class="help-list">
         <li>Separe tarefas com <code>;</code></li>
         <li>Use <code>!</code> no começo para ir para <strong>Em andamento</strong></li>
+        <li>Use <code>!!</code> para marcar prioridade alta</li>
         <li>Use <code>(categoria)</code> para definir a categoria</li>
         <li>Use <code>@responsavel</code> para responsável</li>
         <li>Use <code>#tag</code> para tags</li>
