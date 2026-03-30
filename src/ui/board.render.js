@@ -136,6 +136,8 @@ export function updateColumnTaskScrollLimits(boardElement) {
     return;
   }
 
+  applyUniformTaskCardHeights(boardElement);
+
   const firstCards = Array.from(boardElement.querySelectorAll(".task-list > .task:first-child"));
   const tallestFirstCardHeight = firstCards.reduce((maxHeight, card) => Math.max(maxHeight, card.offsetHeight), 0);
   const singleCardShellHeight = Math.max(150, Math.ceil(tallestFirstCardHeight + 32));
@@ -157,6 +159,24 @@ export function updateColumnTaskScrollLimits(boardElement) {
     const totalHeight = firstTen.reduce((sum, card) => sum + card.offsetHeight, 0);
     const gap = firstTen.length > 1 ? (firstTen.length - 1) * 11.52 : 0;
     taskList.style.maxHeight = `${Math.ceil(totalHeight + gap + 4)}px`;
+  });
+}
+
+function applyUniformTaskCardHeights(boardElement) {
+  const cards = Array.from(boardElement.querySelectorAll(".task-list > .task"));
+  if (cards.length === 0) {
+    return;
+  }
+
+  cards.forEach((card) => {
+    card.style.minHeight = "";
+  });
+
+  const tallestCardHeight = cards.reduce((maxHeight, card) => Math.max(maxHeight, card.offsetHeight), 0);
+  const normalizedHeight = Math.max(130, Math.min(220, Math.ceil(tallestCardHeight)));
+
+  cards.forEach((card) => {
+    card.style.minHeight = `${normalizedHeight}px`;
   });
 }
 
