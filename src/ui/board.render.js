@@ -132,7 +132,17 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
 }
 
 export function updateColumnTaskScrollLimits(boardElement) {
-  boardElement?.querySelectorAll(".task-list").forEach((taskList) => {
+  if (!boardElement) {
+    return;
+  }
+
+  const firstCards = Array.from(boardElement.querySelectorAll(".task-list > .task:first-child"));
+  const tallestFirstCardHeight = firstCards.reduce((maxHeight, card) => Math.max(maxHeight, card.offsetHeight), 0);
+  const singleCardShellHeight = Math.max(150, Math.ceil(tallestFirstCardHeight + 32));
+
+  boardElement.querySelectorAll(".task-list").forEach((taskList) => {
+    taskList.style.minHeight = `${singleCardShellHeight}px`;
+
     const cards = Array.from(taskList.querySelectorAll(":scope > .task"));
     const shouldCap = cards.length > 10;
 
