@@ -1,0 +1,275 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimal Kanban — Technical Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./technical-documentation.css" />
+</head>
+<body>
+  <main class="doc-app">
+    <header id="top" class="doc-header">
+      <div>
+        <h1>Minimal Kanban</h1>
+        <p class="subtitle">Technical Documentation</p>
+      </div>
+      <button id="theme-toggle" type="button" class="theme-btn" aria-label="Alternar tema" aria-pressed="false">
+        <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
+        <span id="theme-label">Dark</span>
+      </button>
+    </header>
+
+    <div class="doc-layout">
+      <aside class="doc-sidebar">
+        <nav class="doc-nav" aria-label="Navegacao da documentacao">
+          <a href="#top">Overview</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#stack">Technology Stack</a>
+          <a href="#core-features">Core Features</a>
+          <a href="#parser">Parser</a>
+          <a href="#ai-planning">AI Planning</a>
+          <a href="#ui">User Interface</a>
+          <a href="#database">Database</a>
+          <a href="#security">Security (RLS)</a>
+          <a href="#sync">Sync</a>
+          <a href="#persistence">Persistence</a>
+          <a href="#roadmap">Roadmap</a>
+        </nav>
+      </aside>
+
+      <div class="doc-content">
+        <section id="overview" class="doc-card">
+          <h2>1. Overview</h2>
+          <p>Minimal Kanban (Fluxo Essencial) e uma aplicacao Kanban minimalista focada em produtividade pessoal e organizacao de tarefas, com arquitetura modular no frontend e sincronizacao cloud via Supabase.</p>
+          <p>O objetivo do projeto e oferecer um Kanban rapido, simples e extensivel, evitando complexidade desnecessaria comum em ferramentas tradicionais.</p>
+          <h3>Principais caracteristicas</h3>
+          <ul>
+            <li>Interface minimalista e rapida</li>
+            <li>Arquitetura modular escalavel</li>
+            <li>Persistencia hibrida (local + cloud)</li>
+            <li>Automacao de criacao de tarefas</li>
+            <li>Base preparada para evolucao SaaS</li>
+          </ul>
+        </section>
+
+        <section id="architecture" class="doc-card">
+          <h2>2. Architecture Overview</h2>
+          <p>A aplicacao utiliza uma arquitetura frontend modular baseada em ES Modules, organizada por responsabilidade.</p>
+          <pre><code>src/
+ ├── app.js
+ ├── state/
+ ├── services/
+ ├── ui/
+ ├── features/
+ ├── storage/
+ └── utils/</code></pre>
+          <h3>Entry Point</h3>
+          <p><code>src/app.js</code></p>
+          <ul>
+            <li>Inicializacao da aplicacao</li>
+            <li>Bootstrap do estado global</li>
+            <li>Inicializacao da autenticacao</li>
+            <li>Carregamento inicial de boards/tasks</li>
+          </ul>
+        </section>
+
+        <section id="stack" class="doc-card">
+          <h2>3. Technology Stack</h2>
+          <h3>Frontend</h3>
+          <ul>
+            <li>HTML</li>
+            <li>CSS</li>
+            <li>Vanilla JavaScript (ES Modules)</li>
+          </ul>
+          <p>Motivacao: simplicidade, controle total do runtime e ausencia de dependencias pesadas.</p>
+          <h3>Persistencia</h3>
+          <ul>
+            <li>Supabase</li>
+            <li>PostgreSQL</li>
+            <li>Auth</li>
+            <li>Row Level Security (RLS)</li>
+            <li>Local Storage</li>
+          </ul>
+          <p>Local Storage e utilizado como cache local, fallback offline e compatibilidade com estado legado.</p>
+        </section>
+
+        <section id="core-features" class="doc-card">
+          <h2>4. Core Features</h2>
+          <h3>4.1 Kanban System</h3>
+          <p>O sistema suporta multiplos boards com colunas personalizaveis.</p>
+          <ul>
+            <li>Criacao de boards</li>
+            <li>Colunas customizaveis</li>
+            <li>Drag and drop entre colunas</li>
+            <li>Limpeza de coluna com confirmacao</li>
+          </ul>
+          <h3>4.2 Task Management</h3>
+          <ul>
+            <li>Criacao</li>
+            <li>Edicao inline</li>
+            <li>Edicao via modal</li>
+            <li>Exclusao</li>
+            <li>Movimentacao entre colunas</li>
+          </ul>
+          <h3>4.3 Task Metadata</h3>
+          <table>
+            <thead><tr><th>Campo</th><th>Descricao</th></tr></thead>
+            <tbody>
+              <tr><td>categoria</td><td>organizacao semantica</td></tr>
+              <tr><td>responsavel</td><td>usuario associado</td></tr>
+              <tr><td>tags</td><td>agrupamento flexivel</td></tr>
+              <tr><td>prioridade</td><td>normal / alta</td></tr>
+              <tr><td>data</td><td>data planejada</td></tr>
+              <tr><td>completed_at</td><td>timestamp de conclusao</td></tr>
+              <tr><td>comentarios</td><td>discussoes da tarefa</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="parser" class="doc-card">
+          <h2>5. Task Input Automation</h2>
+          <p>Parser de tarefas baseado em texto para converter comandos em metadados estruturados.</p>
+          <table>
+            <thead><tr><th>Simbolo</th><th>Funcao</th></tr></thead>
+            <tbody>
+              <tr><td><code>!</code></td><td>mover para Em andamento</td></tr>
+              <tr><td><code>!!</code></td><td>prioridade alta</td></tr>
+              <tr><td><code>(categoria)</code></td><td>categoria</td></tr>
+              <tr><td><code>@responsavel</code></td><td>responsavel</td></tr>
+              <tr><td><code>#tag</code></td><td>tag</td></tr>
+              <tr><td><code>+data</code></td><td>data</td></tr>
+            </tbody>
+          </table>
+          <pre><code>!criar API (backend) @joao #node +05-04-2026</code></pre>
+          <p>Resultado: coluna Em andamento, categoria backend, responsavel joao, tag node, data 05-04-2026.</p>
+        </section>
+
+        <section id="ai-planning" class="doc-card">
+          <h2>6. AI Planning System</h2>
+          <p>Modal de planejamento assistido por IA para converter descricoes em multiplas tasks Kanban.</p>
+          <p><strong>Entrada:</strong> Planejar lancamento do produto</p>
+          <p><strong>Saida esperada:</strong> definir roadmap, criar landing page, configurar analytics, definir estrategia de marketing.</p>
+        </section>
+
+        <section id="ui" class="doc-card">
+          <h2>7. User Interface</h2>
+          <h3>Recursos</h3>
+          <ul>
+            <li>Dark mode / Light mode</li>
+            <li>Focus mode</li>
+            <li>Modais de gerenciamento</li>
+            <li>Feedback visual para acoes criticas</li>
+          </ul>
+          <h3>Objetivos de UX</h3>
+          <ul>
+            <li>Baixa carga cognitiva</li>
+            <li>Rapidez de interacao</li>
+            <li>Clareza visual</li>
+          </ul>
+        </section>
+
+        <section id="database" class="doc-card">
+          <h2>8. Database Architecture (Supabase)</h2>
+          <p>Modelagem escalavel preparada para colaboracao futura.</p>
+          <h3>Tabelas</h3>
+          <ul>
+            <li>profiles</li>
+            <li>boards</li>
+            <li>columns</li>
+            <li>tasks</li>
+            <li>task_tags</li>
+            <li>comments</li>
+          </ul>
+          <h3>Relacoes</h3>
+          <ul>
+            <li>profiles.id -> auth.users.id</li>
+            <li>boards.user_id -> profiles.id</li>
+            <li>columns.board_id -> boards.id</li>
+            <li>tasks.board_id -> boards.id</li>
+            <li>tasks.column_id -> columns.id</li>
+            <li>task_tags.task_id -> tasks.id</li>
+            <li>comments.task_id -> tasks.id</li>
+            <li>comments.user_id -> profiles.id</li>
+          </ul>
+          <h3>Indices principais</h3>
+          <ul>
+            <li>tasks(board_id)</li>
+            <li>tasks(column_id)</li>
+            <li>columns(board_id)</li>
+          </ul>
+        </section>
+
+        <section id="security" class="doc-card">
+          <h2>9. Security Model (RLS)</h2>
+          <p>Row Level Security habilitado.</p>
+          <table>
+            <thead><tr><th>Tabela</th><th>Regra</th></tr></thead>
+            <tbody>
+              <tr><td>boards</td><td>apenas dono</td></tr>
+              <tr><td>columns</td><td>via board</td></tr>
+              <tr><td>tasks</td><td>via board</td></tr>
+              <tr><td>comments</td><td>via task</td></tr>
+              <tr><td>task_tags</td><td>via task</td></tr>
+            </tbody>
+          </table>
+          <pre><code>boards.user_id = auth.uid()</code></pre>
+        </section>
+
+        <section id="sync" class="doc-card">
+          <h2>10. Sync Architecture</h2>
+          <p>Sincronizacao hibrida entre aplicacao e banco:</p>
+          <ol>
+            <li>Usuario autentica</li>
+            <li>Snapshot cloud e carregado</li>
+            <li>Estado local e reconciliado</li>
+            <li>Alteracoes sao enviadas com debounce</li>
+          </ol>
+        </section>
+
+        <section id="persistence" class="doc-card">
+          <h2>11. Data Persistence Strategy</h2>
+          <h3>Local</h3>
+          <ul>
+            <li>Cache</li>
+            <li>Fallback</li>
+            <li>Uso offline</li>
+          </ul>
+          <h3>Cloud</h3>
+          <ul>
+            <li>Sincronizacao</li>
+            <li>Backup</li>
+            <li>Multi-dispositivo</li>
+          </ul>
+        </section>
+
+        <section id="roadmap" class="doc-card">
+          <h2>12. Roadmap</h2>
+          <h3>V0 - V6 (concluido)</h3>
+          <ul>
+            <li>Kanban base</li>
+            <li>CRUD tasks</li>
+            <li>Boards</li>
+            <li>Metadados</li>
+            <li>Persistencia</li>
+            <li>Parser de tarefas</li>
+          </ul>
+          <h3>V7 - Arquitetura Modular</h3>
+          <p>Status: concluido. Separacao clara de responsabilidades.</p>
+          <h3>V8 - UX Improvements</h3>
+          <p>Status: em andamento. Planejado: acessibilidade, feedback ARIA, focus trap.</p>
+          <h3>V9 - IA Avancada</h3>
+          <p>Planejado: geracao inteligente de tarefas e sugestoes automaticas.</p>
+          <h3>V10 - SaaS</h3>
+          <p>Planejado: colaboracao, multiusuario e permissoes avancadas.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./technical-documentation.js"></script>
+</body>
+</html>
