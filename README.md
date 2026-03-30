@@ -1,30 +1,28 @@
-﻿# Fluxo Essencial
+﻿# Minimal Kanban
 
-Kanban pessoal, frontend-only, feito com HTML + CSS + JavaScript vanilla.
-
-O foco do projeto é manter execução rápida no dia a dia, com visual limpo e recursos úteis sem dependência de backend.
+Kanban pessoal frontend-only feito com HTML, CSS e JavaScript vanilla.
 
 ## Funcionalidades
 
-- Múltiplas tabelas (boards): criar, renomear, excluir, alternar
-- Múltiplas colunas por tabela: criar, renomear, excluir
+- Multiplas tabelas (boards): criar, renomear, excluir, alternar
+- Multiplas colunas por tabela: criar, renomear, excluir
 - Tarefas com:
-  - título
+  - titulo
   - categoria
-  - responsável
+  - responsavel
   - tags
   - data
   - finalizado em
   - prioridade
-  - comentários
+  - comentarios
 - Drag and drop entre colunas
 - Modo foco
 - Tema dark/light
-- Planejamento com IA (input em linguagem curta)
-- Backup e importação via JSON
-- Persistência local (`localStorage`)
+- Planejamento com IA (input curto)
+- Backup e importacao via JSON
+- Persistencia local (`localStorage`)
 
-## Parsing de tarefas (Planejar / entrada rápida)
+## Parsing de tarefas
 
 Comandos suportados:
 
@@ -32,20 +30,20 @@ Comandos suportados:
 - `!` envia para Em andamento
 - `!!` define prioridade alta
 - `(categoria)` define categoria
-- `@responsavel` define responsável
+- `@responsavel` define responsavel
 - `#tag` adiciona tag
 - `+data` ou `*data` define data
 
 Exemplo:
 
 ```text
-!criar API (manhã) @joao #backend +05042026; !!revisar fluxo de caixa (financeiro) @ana #urgente +07-04-2026
+!criar API (manha) @joao #backend +05042026; !!revisar fluxo de caixa (financeiro) @ana #urgente +07-04-2026
 ```
 
 ## Arquitetura (ES Modules)
 
 ```text
-fluxo-essencial
+minimal-kanban
 ├─ index.html
 ├─ style.css
 └─ src/
@@ -81,7 +79,7 @@ fluxo-essencial
 ## Como rodar
 
 1. Abra o `index.html` no navegador.
-2. Ou rode com Live Server para fluxo de desenvolvimento.
+2. Ou rode com Live Server para desenvolvimento.
 
 ## Stack
 

@@ -1436,7 +1436,7 @@ function onExportBackup() {
   const url = URL.createObjectURL(blob);
 
   const stamp = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-");
-  const filename = `fluxo-essencial-backup-${stamp}.json`;
+  const filename = `minimal-kanban-backup-${stamp}.json`;
 
   const link = document.createElement("a");
   link.href = url;

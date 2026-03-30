@@ -12,7 +12,7 @@ export function buildBackupPayload({ boards, activeBoardId, loadTasksForBoard, t
   tasksByBoard[activeBoardId] = tasks;
 
   return {
-    app: "fluxo-essencial",
+    app: "minimal-kanban",
     version: 1,
     exportedAt: new Date().toISOString(),
     boards,
