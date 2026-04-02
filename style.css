@@ -577,6 +577,30 @@ body:not(.dark) .column-head {
   color: var(--text);
 }
 
+.column-title-btn {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0.12rem 0.36rem 0.12rem 0.2rem;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  cursor: default;
+}
+
+.column-title-hint {
+  display: none;
+  font-size: 0.86rem;
+  color: color-mix(in srgb, var(--text) 62%, var(--text-muted));
+}
+
 .column[data-column="inprogress"] h2 {
   color: var(--text);
 }
@@ -645,6 +669,55 @@ body.dark .task-list {
 
 .task-list.drag-over {
   background: color-mix(in srgb, var(--surface-low) 66%, var(--surface-card));
+}
+
+.column-collapse-btn {
+  margin-top: 0.1rem;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-low) 84%, var(--surface-card));
+  width: 46px;
+  height: 16px;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.16s ease;
+}
+
+.column-collapse-btn:hover {
+  background: color-mix(in srgb, var(--surface-low) 72%, var(--surface-card));
+  color: var(--text);
+}
+
+.column-collapse-btn::before {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 3px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line-soft) 76%, transparent);
+}
+
+.column .task-list {
+  transition: max-height 0.24s ease, min-height 0.2s ease, padding 0.2s ease, opacity 0.18s ease;
+}
+
+.column.is-collapsed {
+  gap: 0.42rem;
+}
+
+.column.is-collapsed .clear-column-btn {
+  display: none;
+}
+
+.column.is-collapsed .task-list {
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .task {
@@ -1061,6 +1134,9 @@ body:not(.dark) .task-delete-confirm .danger {
   transform: translateX(-50%) scale(var(--ui-scale));
   transform-origin: bottom center;
   z-index: 120;
+  display: inline-flex;
+  gap: 0.46rem;
+  align-items: center;
 }
 
 .focus-btn {
@@ -1141,21 +1217,91 @@ body.focus-mode .focus-btn {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
 
+body.focus-mode .column-title-static {
+  font-weight: 740;
+}
+
 body.focus-mode .column {
   display: none;
 }
 
-body.focus-mode .column[data-column="inprogress"],
 body.focus-mode .column[data-focus-main="true"] {
   display: flex;
 }
 
-body.focus-mode .column[data-column="inprogress"] h2::after,
+body.focus-mode .column-collapse-btn {
+  display: none;
+}
+
 body.focus-mode .column[data-focus-main="true"] h2::after {
-  content: " · foco";
+  content: " - foco";
   font-size: 0.72em;
   letter-spacing: 0.1em;
   color: color-mix(in srgb, var(--primary) 72%, var(--text));
+}
+
+body.focus-mode .focus-column-picker {
+  position: relative;
+}
+
+body.focus-mode .focus-column-trigger {
+  list-style: none;
+  border: 1px solid color-mix(in srgb, var(--line-soft) 64%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--surface-low) 62%, var(--surface-card));
+  width: 34px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+body.focus-mode .focus-column-trigger::-webkit-details-marker {
+  display: none;
+}
+
+body.focus-mode .focus-column-trigger::before {
+  content: "<";
+  font-size: 0.96rem;
+  color: color-mix(in srgb, var(--text) 82%, var(--text-muted));
+  line-height: 1;
+}
+
+body.focus-mode .focus-column-picker[open] .focus-column-trigger::before {
+  content: "v";
+}
+
+body.focus-mode .focus-column-menu {
+  position: absolute;
+  top: calc(100% + 0.28rem);
+  right: 0;
+  min-width: 170px;
+  padding: 0.3rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--line-soft) 62%, transparent);
+  background: color-mix(in srgb, var(--surface-card) 94%, var(--surface-low));
+  display: grid;
+  gap: 0.22rem;
+  z-index: 30;
+}
+
+body.focus-mode .focus-column-option {
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--text) 82%, var(--text-muted));
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 620;
+  text-align: left;
+  padding: 0.32rem 0.45rem;
+  cursor: pointer;
+}
+
+body.focus-mode .focus-column-option:hover,
+body.focus-mode .focus-column-option.active {
+  background: color-mix(in srgb, var(--surface-low) 66%, var(--surface-card));
+  color: var(--text);
 }
 
 .focus-btn.pulse {

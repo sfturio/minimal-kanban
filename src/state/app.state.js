@@ -14,6 +14,8 @@
   deleteConfirmColumnId: null,
   clearConfirmColumn: null,
   boardsPanelMode: "tables",
+  collapsedColumnsByBoard: {},
+  focusColumnByBoard: {},
 };
 
 export function getAppState() {

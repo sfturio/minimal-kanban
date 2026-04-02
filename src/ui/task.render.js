@@ -46,8 +46,6 @@ export function createTaskElement(task, context) {
   card.innerHTML = `
     <div class="task-main"></div>
     <div class="task-actions">
-      <button type="button" data-action="left">←</button>
-      <button type="button" data-action="right">→</button>
       <button type="button" class="comment" data-action="toggle-comments" aria-label="Comentários">🗨</button>
       <button type="button" data-action="edit">Renomear</button>
       <button type="button" class="delete" data-action="delete">Excluir</button>
@@ -183,13 +181,6 @@ export function createTaskElement(task, context) {
   if (title) {
     title.textContent = task.title;
   }
-
-  const leftButton = card.querySelector('[data-action="left"]');
-  const rightButton = card.querySelector('[data-action="right"]');
-  const firstColumnId = columns[0]?.id;
-  const terminalColumnId = columns[columns.length - 1]?.id;
-  leftButton.disabled = task.status === firstColumnId;
-  rightButton.disabled = task.status === terminalColumnId;
 
   card.addEventListener("click", (event) => {
     const target = event.target;

@@ -105,18 +105,57 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
   }
 
   board.innerHTML = "";
+  const selectedColumn = state.focusColumnByBoard?.[state.activeBoardId];
+  const fallbackColumn =
+    activeColumns.find((column) => column.id === "inprogress")?.id ||
+    activeColumns[0]?.id ||
+    null;
+  const focusColumnId = activeColumns.some((column) => column.id === selectedColumn)
+    ? selectedColumn
+    : fallbackColumn;
+  const isFocusModeOn = document.body.classList.contains("focus-mode");
 
   activeColumns.forEach((column) => {
+    const collapsedByBoard = state.collapsedColumnsByBoard?.[state.activeBoardId] || {};
+    const isCollapsed = Boolean(collapsedByBoard[column.id]);
+    const isFocusSelected = column.id === focusColumnId;
+    const focusPickerHtml = isFocusModeOn && isFocusSelected
+      ? `
+        <details class="focus-column-picker">
+          <summary class="focus-column-trigger" aria-label="Trocar coluna de foco"></summary>
+          <div class="focus-column-menu">
+            ${activeColumns.map((option) => `
+              <button
+                type="button"
+                class="focus-column-option${option.id === focusColumnId ? " active" : ""}"
+                data-action="set-focus-column"
+                data-column="${escapeHtml(option.id)}"
+              >${escapeHtml(option.name)}</button>
+            `).join("")}
+          </div>
+        </details>
+      `
+      : "";
     const article = document.createElement("article");
-    article.className = "column";
+    article.className = `column${isCollapsed ? " is-collapsed" : ""}`;
     article.dataset.column = column.id;
 
     article.innerHTML = `
       <div class="column-head">
-        <h2>${escapeHtml(column.name)}</h2>
+        <h2 class="column-title-static">${escapeHtml(column.name)}</h2>
+        ${focusPickerHtml}
         <button type="button" class="clear-column-btn" data-action="clear-column" data-column="${column.id}">Limpar</button>
       </div>
-      <div class="task-list" id="${column.id}-list"></div>
+      <div class="task-list${isCollapsed ? " is-collapsed-list" : ""}" id="${column.id}-list"></div>
+      <button
+        type="button"
+        class="column-collapse-btn"
+        data-action="toggle-column-collapse"
+        data-column="${column.id}"
+        aria-expanded="${isCollapsed ? "false" : "true"}"
+        aria-label="${isCollapsed ? "Expandir coluna" : "Recolher coluna"}"
+        title="${isCollapsed ? "Expandir coluna" : "Recolher coluna"}"
+      ></button>
     `;
 
     const taskList = article.querySelector(".task-list");
@@ -138,11 +177,18 @@ export function updateColumnTaskScrollLimits(boardElement) {
 
   applyUniformTaskCardHeights(boardElement);
 
-  const firstCards = Array.from(boardElement.querySelectorAll(".task-list > .task:first-child"));
+  const firstCards = Array.from(boardElement.querySelectorAll(".task-list:not(.is-collapsed-list) > .task:first-child"));
   const tallestFirstCardHeight = firstCards.reduce((maxHeight, card) => Math.max(maxHeight, card.offsetHeight), 0);
   const singleCardShellHeight = Math.max(150, Math.ceil(tallestFirstCardHeight + 32));
 
   boardElement.querySelectorAll(".task-list").forEach((taskList) => {
+    if (taskList.classList.contains("is-collapsed-list")) {
+      taskList.style.minHeight = "";
+      taskList.style.maxHeight = "";
+      taskList.classList.remove("task-list-capped");
+      return;
+    }
+
     taskList.style.minHeight = `${singleCardShellHeight}px`;
 
     const cards = Array.from(taskList.querySelectorAll(":scope > .task"));
@@ -163,7 +209,7 @@ export function updateColumnTaskScrollLimits(boardElement) {
 }
 
 function applyUniformTaskCardHeights(boardElement) {
-  const cards = Array.from(boardElement.querySelectorAll(".task-list > .task"));
+  const cards = Array.from(boardElement.querySelectorAll(".task-list:not(.is-collapsed-list) > .task"));
   if (cards.length === 0) {
     return;
   }

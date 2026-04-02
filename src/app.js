@@ -132,7 +132,7 @@ function bindEvents() {
   dom.boardToggleButton?.addEventListener("click", () => toggleBoardsPanel("tables"));
   dom.settingsColumnsToggleButton?.addEventListener("click", () => toggleBoardsPanel("columns"));
   dom.themeToggleButton?.addEventListener("click", () => toggleTheme(dom));
-  dom.focusToggleButton?.addEventListener("click", () => toggleFocusMode(dom));
+  dom.focusToggleButton?.addEventListener("click", onToggleFocusMode);
 
   dom.boardsCloseButton?.addEventListener("click", closeBoardsPanel);
   dom.boardsOverlay?.addEventListener("click", (event) => {
@@ -678,6 +678,25 @@ function render() {
 
   applyFocusTargetColumn();
   updateClearColumnButtons();
+}
+
+function getSelectedFocusColumnId() {
+  const columns = getActiveColumns();
+  if (columns.length === 0) {
+    return null;
+  }
+
+  const selected = state.focusColumnByBoard[state.activeBoardId];
+  if (selected && columns.some((column) => column.id === selected)) {
+    return selected;
+  }
+
+  return getFocusColumnId();
+}
+
+function onToggleFocusMode() {
+  toggleFocusMode(dom);
+  render();
 }
 
 function onTaskAction({ action, task, card, target }) {
@@ -1308,12 +1327,44 @@ function onBoardClick(event) {
     return;
   }
 
-  const action = target.dataset.action;
+  const actionTarget = target.closest("[data-action]");
+  if (!(actionTarget instanceof HTMLElement)) {
+    return;
+  }
+
+  const action = actionTarget.dataset.action;
+  if (action === "set-focus-column") {
+    const column = actionTarget.dataset.column;
+    if (!column) {
+      return;
+    }
+
+    state.focusColumnByBoard[state.activeBoardId] = column;
+    render();
+    return;
+  }
+
+  if (action === "toggle-column-collapse") {
+    const column = actionTarget.dataset.column;
+    if (!column) {
+      return;
+    }
+
+    if (!state.collapsedColumnsByBoard[state.activeBoardId]) {
+      state.collapsedColumnsByBoard[state.activeBoardId] = {};
+    }
+
+    const boardCollapsed = state.collapsedColumnsByBoard[state.activeBoardId];
+    boardCollapsed[column] = !boardCollapsed[column];
+    render();
+    return;
+  }
+
   if (action !== "clear-column") {
     return;
   }
 
-  const column = target.dataset.column;
+  const column = actionTarget.dataset.column;
   if (!column) {
     return;
   }
@@ -1341,7 +1392,7 @@ function updateClearColumnButtons() {
 
 function applyFocusTargetColumn() {
   const columns = getActiveColumns();
-  const focusColumn = getFocusColumnId();
+  const focusColumn = getSelectedFocusColumnId();
   const hasFocusColumn = columns.some((column) => column.id === focusColumn);
   if (!hasFocusColumn) {
     return;
@@ -1369,6 +1420,7 @@ function onGlobalKeydown(event) {
   if (event.key === "Escape") {
     if (document.body.classList.contains("focus-mode")) {
       applyFocusMode(false, dom);
+      render();
       return;
     }
 
