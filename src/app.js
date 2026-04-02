@@ -1244,6 +1244,26 @@ function resolveOrCreateColumnId(columnName) {
   return newColumn.id;
 }
 
+function setColumnImportant(columnId, important = true) {
+  const board = getActiveBoard();
+  if (!board) {
+    return;
+  }
+
+  const column = board.columns.find((item) => item.id === columnId);
+  if (!column) {
+    return;
+  }
+
+  const nextValue = Boolean(important);
+  if (column.important === nextValue) {
+    return;
+  }
+
+  column.important = nextValue;
+  saveBoards();
+}
+
 function mapGeneratedTasksToBoard(generated, fallbackTask = null) {
   const source = Array.isArray(generated) ? generated : [];
   const list = source.length > 0 ? source : (fallbackTask ? [fallbackTask] : []);
@@ -1251,14 +1271,27 @@ function mapGeneratedTasksToBoard(generated, fallbackTask = null) {
     return [];
   }
 
-  return list.map((task) => {
+  const mapped = [];
+
+  list.forEach((task) => {
     const status = resolveOrCreateColumnId(task?.columnName);
-    return normalizeTask({
+
+    if (task?.markColumnImportant) {
+      setColumnImportant(status, true);
+    }
+
+    if (task?.__directive === "column-important") {
+      return;
+    }
+
+    mapped.push(normalizeTask({
       ...task,
       id: uid(),
       status,
-    });
+    }));
   });
+
+  return mapped;
 }
 
 function onCreateTask(event) {

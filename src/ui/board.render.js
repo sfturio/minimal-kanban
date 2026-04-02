@@ -178,8 +178,14 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
         </div>
       </details>
     `;
+    const tasksInColumn = orderTasksForColumn(
+      tasks.filter((task) => task.status === column.id),
+      { mode: sortMode, direction: sortDirection },
+    );
+    const isImportantColumn = Boolean(column.important);
+
     const article = document.createElement("article");
-    article.className = `column${isCollapsed ? " is-collapsed" : ""}`;
+    article.className = `column${isCollapsed ? " is-collapsed" : ""}${isImportantColumn ? " is-important-column" : ""}`;
     article.dataset.column = column.id;
 
     article.innerHTML = `
@@ -204,10 +210,6 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
     `;
 
     const taskList = article.querySelector(".task-list");
-    const tasksInColumn = orderTasksForColumn(
-      tasks.filter((task) => task.status === column.id),
-      { mode: sortMode, direction: sortDirection },
-    );
     tasksInColumn.forEach((task) => {
       taskList.appendChild(createTaskElement(task, context));
     });

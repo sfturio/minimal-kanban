@@ -21,13 +21,21 @@ function parseTaskItem(rawText) {
 
   let priority = "normal";
   let columnName = null;
+  let markColumnImportant = false;
+
+  const importantColumnMatch = text.match(/^!\s*\[([^\]]+)\]\s*(.*)$/u);
+  if (importantColumnMatch) {
+    columnName = normalizeSpaces(importantColumnMatch[1]);
+    markColumnImportant = Boolean(columnName);
+    text = normalizeSpaces(importantColumnMatch[2] || "");
+  }
 
   if (text.startsWith("!")) {
     priority = "high";
     text = normalizeSpaces(text.slice(1));
   }
 
-  if (text.startsWith("[")) {
+  if (!columnName && text.startsWith("[")) {
     const extracted = extractLeadingColumnCommand(text);
     columnName = extracted.columnName;
     text = extracted.remainder;
@@ -65,6 +73,13 @@ function parseTaskItem(rawText) {
 
   const title = normalizeSpaces(text);
   if (!title) {
+    if (markColumnImportant && columnName) {
+      return {
+        __directive: "column-important",
+        columnName,
+        markColumnImportant: true,
+      };
+    }
     return null;
   }
 
@@ -78,6 +93,7 @@ function parseTaskItem(rawText) {
     deadline,
     completedAt: null,
     columnName,
+    markColumnImportant,
     priority,
     createdAt: new Date(),
   };

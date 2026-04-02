@@ -22,6 +22,7 @@ export function normalizeBoardColumns(columns) {
         id,
         name,
         cloudId: isUuid(column?.cloudId) ? String(column.cloudId) : null,
+        important: Boolean(column?.important),
       };
     })
     .filter(Boolean);
@@ -111,5 +112,5 @@ export function createColumn(name, existingColumns) {
     suffix += 1;
   }
 
-  return { id: nextId, name: normalizedName, cloudId: null };
+  return { id: nextId, name: normalizedName, cloudId: null, important: false };
 }

@@ -723,6 +723,19 @@ body:not(.dark) .column-head {
   box-shadow: none;
 }
 
+.column.is-important-column {
+  background: color-mix(in srgb, #4a1f26 22%, var(--surface-low));
+  border-color: color-mix(in srgb, #9e3c4e 42%, var(--line-soft));
+}
+
+.column.is-important-column .task-list {
+  background: color-mix(in srgb, #3c1b21 26%, var(--list-bg));
+}
+
+.column.is-important-column .column-head {
+  border-bottom-color: color-mix(in srgb, #9e3c4e 34%, var(--line-soft));
+}
+
 body.dark .column {
   background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
   border-color: #2b2f37;
