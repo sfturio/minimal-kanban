@@ -585,11 +585,6 @@ body:not(.dark) .column-head {
   border-color: color-mix(in srgb, var(--line-soft) 62%, transparent);
 }
 
-.column[data-column="done"] h2 {
-  color: color-mix(in srgb, var(--text-muted) 92%, var(--text));
-  opacity: 0.84;
-}
-
 .column[data-column="inprogress"] .task-list {
   border: none;
   box-shadow: none;
@@ -603,17 +598,6 @@ body.dark .column {
 body.dark .task-list {
   background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
   box-shadow: none;
-}
-
-.column[data-column="done"] {
-  background: color-mix(in srgb, var(--surface-low) 86%, var(--background));
-  border-color: color-mix(in srgb, var(--line-soft) 56%, transparent);
-  box-shadow: none;
-}
-
-body.dark .column[data-column="done"] {
-  background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
-  border-color: #2b2f37;
 }
 
 .task-list {
@@ -659,14 +643,6 @@ body.dark .column[data-column="done"] {
   background: color-mix(in srgb, var(--line-soft) 48%, transparent);
 }
 
-.column[data-column="done"] .task-list {
-  background: var(--list-done-bg);
-}
-
-body.dark .column[data-column="done"] .task-list {
-  background: color-mix(in srgb, var(--surface-low) 90%, var(--surface-card));
-}
-
 .task-list.drag-over {
   background: color-mix(in srgb, var(--surface-low) 66%, var(--surface-card));
 }
@@ -703,29 +679,6 @@ body.dark .task {
 body.dark .task:hover {
   background: color-mix(in srgb, var(--surface-low) 76%, var(--surface-card));
   border-color: color-mix(in srgb, var(--line-soft) 88%, transparent);
-}
-
-.column[data-column="done"] .task {
-  background: var(--done-task-bg);
-}
-
-body.dark .column[data-column="done"] .task {
-  background: color-mix(in srgb, var(--surface-low) 82%, var(--surface-card));
-  border-color: color-mix(in srgb, var(--line-soft) 72%, transparent);
-}
-
-body.dark .column[data-column="done"] .task:hover {
-  background: color-mix(in srgb, var(--surface-low) 76%, var(--surface-card));
-  border-color: color-mix(in srgb, var(--line-soft) 88%, transparent);
-}
-
-.column[data-column="done"] .task-title {
-  color: color-mix(in srgb, var(--text-muted) 82%, var(--text));
-  opacity: 0.9;
-}
-
-.column[data-column="done"] .task-chip {
-  opacity: 0.66;
 }
 
 .task.dragging {
