@@ -308,9 +308,13 @@ async function handleAuthState(user) {
   setAuthStatus(username || user.email || "Convidado");
   updateChangeUsernameButtonLabel(username || "");
 
-  const pulled = await pullCloudToLocal();
-  if (!pulled) {
-    await syncAllToCloud();
+  try {
+    const pulled = await pullCloudToLocal();
+    if (!pulled) {
+      await syncAllToCloud();
+    }
+  } catch (error) {
+    console.error("Falha de sincronizacao apos autenticacao:", error);
   }
 }
 
@@ -780,8 +784,8 @@ function getAllLocalTasksForCloud() {
         category: task.category || "",
         assignee: task.assignee || null,
         priority: task.priority || "normal",
-        deadline: task.deadline || null,
-        completedAt: task.completedAt || null,
+        deadline: toCloudDate(task.deadline),
+        completedAt: toCloudDate(task.completedAt),
         position: index,
         status: task.status,
         createdAt:
@@ -817,6 +821,28 @@ function getAllLocalTasksForCloud() {
   });
 
   return { tasks, taskTags, comments, columns };
+}
+
+function toCloudDate(value) {
+  const raw = normalizeSpaces(value || "");
+  if (!raw) {
+    return null;
+  }
+
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    return raw;
+  }
+
+  const ptBrMatch = raw.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (ptBrMatch) {
+    const day = ptBrMatch[1];
+    const month = ptBrMatch[2];
+    const year = ptBrMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+
+  return null;
 }
 
 function remapBoardKeyedMap(map, idMap) {

@@ -35,6 +35,17 @@ export function normalizeDeadline(value) {
     return null;
   }
 
+  const isoMatch = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) {
+    const year = Number(isoMatch[1]);
+    const month = Number(isoMatch[2]);
+    const day = Number(isoMatch[3]);
+    if (isValidDateParts(day, month, year)) {
+      return formatDateParts(day, month, year);
+    }
+    return null;
+  }
+
   const digits = raw.replace(/\D/g, "");
   if (digits.length === 8) {
     const day = Number(digits.slice(0, 2));
