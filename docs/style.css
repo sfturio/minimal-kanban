@@ -16,6 +16,7 @@
 }
 
 html {
+  font-size: 90%;
   scroll-behavior: smooth;
 }
 
@@ -30,6 +31,7 @@ body {
     var(--background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body.dark {
@@ -50,9 +52,10 @@ body.dark {
 }
 
 .doc-app {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  padding: 1.5rem 1.1rem 2.5rem;
+  width: calc(100% - 1.4rem);
+  max-width: none;
+  margin: 0 0 0 0.7rem;
+  padding: 1.5rem 0.9rem 2.5rem;
 }
 
 .doc-header {
@@ -145,6 +148,7 @@ h1 {
 .doc-content {
   display: grid;
   gap: 0.82rem;
+  min-width: 0;
 }
 
 .doc-signature {
