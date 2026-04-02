@@ -784,6 +784,53 @@ function getAllLocalTasksForCloud() {
   return { tasks, taskTags, comments, columns };
 }
 
+function remapBoardKeyedMap(map, idMap) {
+  const source = map && typeof map === "object" ? map : {};
+  const next = {};
+  Object.entries(source).forEach(([boardId, value]) => {
+    next[idMap[boardId] || boardId] = value;
+  });
+  return next;
+}
+
+function migrateLegacyBoardIdsToUuid() {
+  const idMap = {};
+  state.boards.forEach((board) => {
+    if (!isUuid(board.id)) {
+      idMap[board.id] = uid();
+    }
+  });
+
+  if (Object.keys(idMap).length === 0) {
+    return;
+  }
+
+  state.boards = state.boards.map((board) => (
+    idMap[board.id]
+      ? { ...board, id: idMap[board.id] }
+      : board
+  ));
+
+  Object.entries(idMap).forEach(([oldId, newId]) => {
+    const oldKey = taskStorageKey(oldId);
+    const migratedTasks = readJson(oldKey, null);
+    if (Array.isArray(migratedTasks)) {
+      writeJson(taskStorageKey(newId), migratedTasks);
+    }
+    localStorage.removeItem(oldKey);
+  });
+
+  state.activeBoardId = idMap[state.activeBoardId] || state.activeBoardId;
+  state.focusColumnByBoard = remapBoardKeyedMap(state.focusColumnByBoard, idMap);
+  state.collapsedColumnsByBoard = remapBoardKeyedMap(state.collapsedColumnsByBoard, idMap);
+  state.sortModeByBoard = remapBoardKeyedMap(state.sortModeByBoard, idMap);
+  state.sortDirectionByBoard = remapBoardKeyedMap(state.sortDirectionByBoard, idMap);
+
+  persistBoards(state.boards);
+  saveActiveBoardId(state.activeBoardId);
+  state.tasks = loadTasksForBoard(state.activeBoardId).map((task) => normalizeTask(task));
+}
+
 function scheduleCloudSync() {
   if (!isLoggedIn() || isApplyingCloudSnapshot) {
     return;
@@ -805,6 +852,8 @@ async function syncAllToCloud() {
   if (!isLoggedIn() || isApplyingCloudSnapshot) {
     return;
   }
+
+  migrateLegacyBoardIdsToUuid();
 
   const boards = state.boards.map((board) => ({ id: board.id, name: board.name }));
   const { tasks, taskTags, comments, columns } = getAllLocalTasksForCloud();
