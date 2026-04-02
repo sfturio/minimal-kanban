@@ -12,9 +12,10 @@ export const STORAGE_KEYS = {
 };
 
 export const DEFAULT_COLUMNS = [
-  { id: "todo", name: "Próximos" },
-  { id: "inprogress", name: "Em andamento" },
-  { id: "done", name: "Concluído" },
+  { id: "todo", name: "Próximos ⏭️" },
+  { id: "inprogress", name: "Em andamento 🎯" },
+  { id: "done", name: "Concluído ✅" },
+  { id: "notes", name: "Notas 🧠" },
 ];
 
 export const DEFAULT_BOARD_ID = "principal";

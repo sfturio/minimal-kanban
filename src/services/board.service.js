@@ -58,7 +58,7 @@ export function loadBoards() {
 
   const normalized = list.map(normalizeBoard).filter((item) => item.id && item.name);
   if (normalized.length === 0) {
-    return [normalizeBoard({ id: DEFAULT_BOARD_ID, name: "Principal", columns: DEFAULT_COLUMNS })];
+    return [normalizeBoard({ id: DEFAULT_BOARD_ID, name: "TRABALHA 📌", columns: DEFAULT_COLUMNS })];
   }
 
   return normalized;

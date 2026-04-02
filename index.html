@@ -27,6 +27,7 @@
         <div class="header-actions">
           <button id="auth-toggle" type="button" class="auth-btn" aria-label="Abrir autenticação">Entrar</button>
           <button id="help-toggle" type="button" class="theme-btn" aria-label="Ajuda" aria-expanded="false">?</button>
+          <button id="emoji-toggle" type="button" class="theme-btn" aria-label="Abrir emojis" title="Emojis">😊</button>
           <div class="settings-wrap">
             <button id="settings-toggle" type="button" class="theme-btn" aria-label="Configurações" aria-expanded="false" aria-haspopup="true">
               <span class="material-symbols-outlined">menu</span>
@@ -88,6 +89,7 @@
           <div class="task-list" id="done-list"></div>
         </article>
       </section>
+      <footer class="app-signature" aria-label="Assinatura do app">@by sfturio</footer>
     </div>
 
   </main>
@@ -212,6 +214,31 @@
         <p class="help-export-note">Gere tarefas automaticamente com IA usando este formato:</p>
         <button id="help-export-prompt-btn" type="button" class="help-export-btn">Copiar prompt para IA</button>
       </div>
+    </section>
+  </div>
+
+  <div id="emoji-modal-overlay" class="modal-overlay" hidden>
+    <section class="ai-modal emoji-modal" role="dialog" aria-modal="true" aria-labelledby="emoji-modal-title">
+      <div class="ai-modal-head">
+        <h2 id="emoji-modal-title">Emojis rápidos</h2>
+        <button id="emoji-close-btn" type="button" class="icon-close" aria-label="Fechar menu de emojis">×</button>
+      </div>
+      <p>Clique em um emoji para copiar.</p>
+      <div id="emoji-grid" class="emoji-grid" aria-label="Lista de emojis">
+        <button type="button" class="emoji-item" data-emoji="⏭️">⏭️</button>
+        <button type="button" class="emoji-item" data-emoji="🎯">🎯</button>
+        <button type="button" class="emoji-item" data-emoji="✅">✅</button>
+        <button type="button" class="emoji-item" data-emoji="🧠">🧠</button>
+        <button type="button" class="emoji-item" data-emoji="📌">📌</button>
+        <button type="button" class="emoji-item" data-emoji="🚀">🚀</button>
+        <button type="button" class="emoji-item" data-emoji="🔥">🔥</button>
+        <button type="button" class="emoji-item" data-emoji="📅">📅</button>
+        <button type="button" class="emoji-item" data-emoji="💡">💡</button>
+        <button type="button" class="emoji-item" data-emoji="📚">📚</button>
+        <button type="button" class="emoji-item" data-emoji="🛠️">🛠️</button>
+        <button type="button" class="emoji-item" data-emoji="🎨">🎨</button>
+      </div>
+      <p id="emoji-copy-status" class="emoji-copy-status" aria-live="polite"> </p>
     </section>
   </div>
 

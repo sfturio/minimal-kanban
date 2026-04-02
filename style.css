@@ -140,6 +140,16 @@ body.dark {
   background: color-mix(in srgb, var(--line-soft) 48%, transparent);
 }
 
+.app-signature {
+  margin: 0.95rem 0 0.2rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--text-muted) 76%, transparent);
+  opacity: 0.8;
+}
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -630,6 +640,39 @@ body.dark #ia-generate-btn:hover {
 .help-export-btn:hover {
   background: color-mix(in srgb, var(--surface-low) 74%, var(--surface-card));
   color: var(--text);
+}
+
+.emoji-modal {
+  width: min(420px, 100%);
+}
+
+.emoji-grid {
+  margin-top: 0.25rem;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.42rem;
+}
+
+.emoji-item {
+  border: 1px solid color-mix(in srgb, var(--line-soft) 56%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-low) 82%, var(--surface-card));
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1;
+  min-height: 2.35rem;
+  cursor: pointer;
+}
+
+.emoji-item:hover {
+  background: color-mix(in srgb, var(--surface-low) 70%, var(--surface-card));
+}
+
+.emoji-copy-status {
+  min-height: 1.2rem;
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--text-muted) 82%, var(--text));
 }
 
 .column {

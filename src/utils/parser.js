@@ -111,5 +111,5 @@ export function gerarTasksIA(text) {
 }
 
 export function getExamplePlanInput() {
-  return "[em andamento] organizar sprint semanal (manha) @joao #backend #api +06042026; !revisar fluxo de caixa (financeiro) @ana #financas #urgente +07042026; [proximos] preparar campanha de leads (marketing) @bia #conteudo #social +08042026";
+  return "[Próximos ⏭️] criar estrutura inicial; ![Em andamento 🎯]; [Em andamento 🎯] configurar fluxo; [Concluído ✅] validar processo; [Notas 🧠] observações gerais";
 }

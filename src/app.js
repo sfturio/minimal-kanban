@@ -51,6 +51,8 @@ import {
   closeAIPlanningModal,
   openHelpModal,
   closeHelpModal,
+  openEmojiModal,
+  closeEmojiModal,
   openTaskModal,
   closeTaskModal,
   readTaskModalData,
@@ -125,6 +127,12 @@ function bindEvents() {
     if (event.target === dom.helpModalOverlay) closeHelpModal(dom);
   });
   dom.helpExportPromptButton?.addEventListener("click", onCopyPromptTemplate);
+  dom.emojiToggleButton?.addEventListener("click", onOpenEmojiPicker);
+  dom.emojiCloseButton?.addEventListener("click", () => closeEmojiModal(dom));
+  dom.emojiModalOverlay?.addEventListener("click", (event) => {
+    if (event.target === dom.emojiModalOverlay) closeEmojiModal(dom);
+  });
+  dom.emojiGrid?.addEventListener("click", onEmojiGridClick);
 
   dom.authToggleButton?.addEventListener("click", onAuthToggleClick);
   dom.authCloseButton?.addEventListener("click", closeAuthModal);
@@ -399,6 +407,42 @@ async function onChangeUsernameClick() {
   if (next) {
     setAuthStatus(next);
     updateChangeUsernameButtonLabel(next);
+  }
+}
+
+function onOpenEmojiPicker() {
+  closeSettingsMenu(dom);
+  if (dom.emojiCopyStatus) {
+    dom.emojiCopyStatus.textContent = " ";
+  }
+  openEmojiModal(dom);
+}
+
+async function onEmojiGridClick(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const emojiButton = target.closest(".emoji-item");
+  if (!(emojiButton instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  const emoji = normalizeSpaces(emojiButton.dataset.emoji || "");
+  if (!emoji) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(emoji);
+    if (dom.emojiCopyStatus) {
+      dom.emojiCopyStatus.textContent = `${emoji} copiado`;
+    }
+  } catch {
+    if (dom.emojiCopyStatus) {
+      dom.emojiCopyStatus.textContent = "Nao foi possivel copiar agora.";
+    }
   }
 }
 
@@ -2024,15 +2068,20 @@ function onGlobalKeydown(event) {
       return;
     }
 
-    if (!dom.helpModalOverlay.hidden) {
-      closeHelpModal(dom);
-      return;
-    }
+      if (!dom.helpModalOverlay.hidden) {
+        closeHelpModal(dom);
+        return;
+      }
 
-    if (!dom.usernameModalOverlay.hidden) {
-      onUsernameSkip();
-      return;
-    }
+      if (!dom.emojiModalOverlay.hidden) {
+        closeEmojiModal(dom);
+        return;
+      }
+
+      if (!dom.usernameModalOverlay.hidden) {
+        onUsernameSkip();
+        return;
+      }
 
     if (!dom.authModalOverlay.hidden) {
       closeAuthModal();

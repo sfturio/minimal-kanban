@@ -6,6 +6,7 @@ export function updatePageLock(dom) {
     || !dom.boardsOverlay?.hidden
     || !dom.taskModalOverlay?.hidden
     || !dom.helpModalOverlay?.hidden
+    || !dom.emojiModalOverlay?.hidden
     || !dom.authModalOverlay?.hidden
     || !dom.usernameModalOverlay?.hidden;
   document.body.classList.toggle("overlay-open", Boolean(hasOverlayOpen));
@@ -53,6 +54,18 @@ export function closeHelpModal(dom) {
   if (!dom.helpModalOverlay) return;
   dom.helpModalOverlay.hidden = true;
   dom.helpToggleButton?.setAttribute("aria-expanded", "false");
+  updatePageLock(dom);
+}
+
+export function openEmojiModal(dom) {
+  if (!dom.emojiModalOverlay) return;
+  dom.emojiModalOverlay.hidden = false;
+  updatePageLock(dom);
+}
+
+export function closeEmojiModal(dom) {
+  if (!dom.emojiModalOverlay) return;
+  dom.emojiModalOverlay.hidden = true;
   updatePageLock(dom);
 }
 
