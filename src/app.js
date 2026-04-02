@@ -1464,6 +1464,7 @@ function closeBoardsPanel() {
   dom.boardsOverlay.hidden = true;
   state.editingBoardId = null;
   state.deleteConfirmBoardId = null;
+  state.deleteConfirmBoardStep = 0;
   state.editingColumnId = null;
   state.deleteConfirmColumnId = null;
   state.deleteConfirmAllColumnsBoardId = null;
@@ -1536,6 +1537,7 @@ function onBoardsListClick(event) {
   if (action === "edit-board") {
     state.editingBoardId = boardId;
     state.deleteConfirmBoardId = null;
+    state.deleteConfirmBoardStep = 0;
     render();
     return;
   }
@@ -1567,13 +1569,27 @@ function onBoardsListClick(event) {
 
   if (action === "delete-board") {
     state.editingBoardId = null;
-    state.deleteConfirmBoardId = state.deleteConfirmBoardId === boardId ? null : boardId;
+    if (state.deleteConfirmBoardId === boardId) {
+      state.deleteConfirmBoardId = null;
+      state.deleteConfirmBoardStep = 0;
+    } else {
+      state.deleteConfirmBoardId = boardId;
+      state.deleteConfirmBoardStep = 1;
+    }
+    render();
+    return;
+  }
+
+  if (action === "proceed-delete-board") {
+    state.deleteConfirmBoardId = boardId;
+    state.deleteConfirmBoardStep = 2;
     render();
     return;
   }
 
   if (action === "cancel-delete-board") {
     state.deleteConfirmBoardId = null;
+    state.deleteConfirmBoardStep = 0;
     render();
     return;
   }
@@ -1857,6 +1873,7 @@ function deleteBoard(boardId) {
   }
 
   state.deleteConfirmBoardId = null;
+  state.deleteConfirmBoardStep = 0;
   state.editingBoardId = null;
   render();
 }

@@ -38,10 +38,12 @@ export function renderBoardsPanel({ dom, state, boards, activeBoardId }) {
     wrapper.innerHTML = itemHtml;
 
     if (state.deleteConfirmBoardId === board.id) {
+      const isFinalStep = state.deleteConfirmBoardStep === 2;
       const confirm = document.createElement("div");
       confirm.className = "board-delete-confirm";
       confirm.innerHTML = `
-        <button type="button" class="danger" data-action="confirm-delete-board" data-board-id="${board.id}">Confirmar</button>
+        <span>${isFinalStep ? "Ultima confirmacao: excluir tabela e tarefas?" : "Tem certeza? Isso remove a tabela e tarefas."}</span>
+        <button type="button" class="danger" data-action="${isFinalStep ? "confirm-delete-board" : "proceed-delete-board"}" data-board-id="${board.id}">${isFinalStep ? "Excluir tabela" : "Continuar"}</button>
         <button type="button" data-action="cancel-delete-board" data-board-id="${board.id}">Cancelar</button>
       `;
       wrapper.appendChild(confirm);

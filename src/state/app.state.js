@@ -11,6 +11,7 @@
   commentsOpenTaskId: null,
   editingBoardId: null,
   deleteConfirmBoardId: null,
+  deleteConfirmBoardStep: 0,
   editingColumnId: null,
   deleteConfirmColumnId: null,
   deleteConfirmAllColumnsBoardId: null,
