@@ -274,6 +274,7 @@ async function handleAuthState(user) {
 
   let username = await getOwnUsernameSilently();
   if (shouldPromptUsernameOnNextAuth && !username) {
+    shouldPromptUsernameOnNextAuth = false;
     closeAuthModal();
     username = await ensureOwnUsername();
   }
