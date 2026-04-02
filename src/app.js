@@ -173,6 +173,7 @@ function bindEvents() {
 
   dom.boardsList?.addEventListener("click", onBoardsListClick);
   dom.columnsList?.addEventListener("click", onColumnsListClick);
+  dom.columnsDangerSlot?.addEventListener("click", onColumnsListClick);
 
   dom.boardElement?.addEventListener("click", onBoardClick);
 
