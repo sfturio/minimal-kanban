@@ -80,6 +80,7 @@ let cloudSyncTimer = null;
 let isApplyingCloudSnapshot = false;
 let usernamePromptResolver = null;
 let shouldPromptUsernameOnNextAuth = false;
+let authSessionReady = false;
 
 boot();
 
@@ -220,6 +221,9 @@ async function initAuth() {
   if (!dom.authToggleButton) {
     return;
   }
+  if (authSessionReady) {
+    return;
+  }
 
   updateChangeUsernameButtonLabel("");
 
@@ -229,10 +233,14 @@ async function initAuth() {
         await handleAuthState(user);
       },
     });
+    authSessionReady = true;
+    dom.authToggleButton.disabled = false;
+    dom.authToggleButton.title = "";
   } catch {
-    dom.authToggleButton.disabled = true;
+    authSessionReady = false;
+    dom.authToggleButton.disabled = false;
     dom.authToggleButton.textContent = "Entrar";
-    dom.authToggleButton.title = "Autenticação indisponível";
+    dom.authToggleButton.title = "Autenticacao temporariamente indisponivel. Tente novamente.";
     setAuthStatus("Convidado");
     updateChangeUsernameButtonLabel("");
   }
@@ -326,12 +334,15 @@ function isValidUsername(value) {
   return /^[a-z0-9._-]{3,24}$/.test(String(value || ""));
 }
 
-function onAuthToggleClick() {
+async function onAuthToggleClick() {
   if (getCurrentUser()) {
     signOut();
     return;
   }
 
+  if (!authSessionReady) {
+    await initAuth();
+  }
   openAuthModal();
 }
 
