@@ -476,9 +476,13 @@ body.dark #ia-generate-btn:hover {
   color: color-mix(in srgb, var(--text) 84%, var(--text-muted));
 }
 
-.help-list .cmd-progress,
 .help-list .cmd-priority {
   color: color-mix(in srgb, #c64f5b 72%, var(--text));
+}
+
+.help-list .cmd-progress {
+  color: #7ed7c2;
+  background: color-mix(in srgb, #173b3a 72%, var(--surface-card));
 }
 
 .help-list .cmd-category {
