@@ -973,7 +973,6 @@ function onGenerateIATasks() {
     }
 
     dom.aiPlanInput.value = "";
-    dom.aiPlanInput.placeholder = "Descreva tarefas separadas por ;";
     dom.aiPlanInput.focus();
     return;
   }
