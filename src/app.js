@@ -79,6 +79,7 @@ let authMode = "signin";
 let cloudSyncTimer = null;
 let isApplyingCloudSnapshot = false;
 let usernamePromptResolver = null;
+let shouldPromptUsernameOnNextAuth = false;
 
 boot();
 
@@ -265,12 +266,18 @@ async function handleAuthState(user) {
     if (!dom.usernameModalOverlay.hidden) {
       resolveUsernamePrompt("");
     }
+    shouldPromptUsernameOnNextAuth = false;
     setAuthStatus("Convidado");
     updateChangeUsernameButtonLabel("");
     return;
   }
 
-  const username = await ensureOwnUsername();
+  let username = await getOwnUsernameSilently();
+  if (shouldPromptUsernameOnNextAuth && !username) {
+    closeAuthModal();
+    username = await ensureOwnUsername();
+  }
+  shouldPromptUsernameOnNextAuth = false;
   setAuthStatus(username || user.email || "Convidado");
   updateChangeUsernameButtonLabel(username || "");
 
@@ -295,6 +302,15 @@ async function ensureOwnUsername() {
   }
 
   return await requestUsernameInClient();
+}
+
+async function getOwnUsernameSilently() {
+  try {
+    const profile = await fetchOwnProfile();
+    return normalizeUsername(profile?.username || "");
+  } catch {
+    return "";
+  }
 }
 
 function normalizeUsername(value) {
@@ -521,6 +537,7 @@ async function onAuthSubmit(event) {
     return;
   }
 
+  shouldPromptUsernameOnNextAuth = true;
   closeAuthModal();
 }
 
