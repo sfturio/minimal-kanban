@@ -546,8 +546,8 @@ body.dark #ia-generate-btn:hover {
 .board {
   display: grid;
   grid-template-columns: repeat(3, minmax(280px, 1fr));
-  grid-auto-rows: auto;
-  grid-auto-flow: row;
+  grid-auto-rows: 12px;
+  grid-auto-flow: row dense;
   gap: 1.35rem;
   align-items: start;
   overflow: visible;
