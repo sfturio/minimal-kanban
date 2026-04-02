@@ -146,7 +146,9 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
     const focusPickerHtml = isFocusModeOn && isFocusSelected
       ? `
         <details class="focus-column-picker">
-          <summary class="focus-column-trigger" aria-label="Trocar coluna de foco"></summary>
+          <summary class="focus-column-trigger" aria-label="Trocar coluna de foco">
+            <span>Colunas</span>
+          </summary>
           <div class="focus-column-menu">
             ${activeColumns.map((option) => `
               <button

@@ -1252,6 +1252,10 @@ body:not(.dark) .task-delete-confirm .danger {
   align-items: center;
 }
 
+body.overlay-open .focus-wrap {
+  display: none;
+}
+
 .focus-btn {
   border: 1px solid color-mix(in srgb, var(--focus-chip-border) 72%, transparent);
   background: color-mix(in srgb, var(--focus-chip-bg) 92%, transparent);
@@ -1363,11 +1367,17 @@ body.focus-mode .focus-column-trigger {
   border: 1px solid color-mix(in srgb, var(--line-soft) 64%, transparent);
   border-radius: 9px;
   background: color-mix(in srgb, var(--surface-low) 62%, var(--surface-card));
-  width: 34px;
+  min-width: 88px;
   height: 30px;
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0 0.5rem;
   cursor: pointer;
+  color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
+  font-size: 0.82rem;
+  font-weight: 680;
 }
 
 body.focus-mode .focus-column-trigger::-webkit-details-marker {
@@ -1376,8 +1386,8 @@ body.focus-mode .focus-column-trigger::-webkit-details-marker {
 
 body.focus-mode .focus-column-trigger::before {
   content: "<";
-  font-size: 0.96rem;
-  color: color-mix(in srgb, var(--text) 82%, var(--text-muted));
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--text) 78%, var(--text-muted));
   line-height: 1;
 }
 
