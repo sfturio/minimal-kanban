@@ -18,6 +18,7 @@ export function renderBoardsPanel({ dom, state, boards, activeBoardId }) {
     const wrapper = document.createElement("div");
     wrapper.className = `board-item${board.id === activeBoardId ? " active-table" : ""}`;
     wrapper.dataset.boardId = board.id;
+    wrapper.draggable = state.editingBoardId !== board.id;
 
     const itemHtml = state.editingBoardId === board.id
       ? `

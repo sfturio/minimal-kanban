@@ -4,6 +4,7 @@
   tasks: [],
   draggingTaskId: null,
   draggingColumnId: null,
+  draggingBoardId: null,
   dragOverListId: null,
   editingTaskId: null,
   modalEditingTaskId: null,

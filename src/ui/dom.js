@@ -49,6 +49,7 @@
 
     boardsOverlay: document.getElementById("boards-overlay"),
     boardsTitle: document.getElementById("boards-title"),
+    boardsReorderHint: document.getElementById("boards-reorder-hint"),
     boardsTablesSection: document.getElementById("boards-tables-section"),
     boardsColumnsSection: document.getElementById("boards-columns-section"),
     boardsBackupSection: document.getElementById("boards-backup-section"),

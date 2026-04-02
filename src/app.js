@@ -193,6 +193,10 @@ function bindEvents() {
   dom.backupFileInput?.addEventListener("change", onBackupFileSelected);
 
   dom.boardsList?.addEventListener("click", onBoardsListClick);
+  dom.boardsList?.addEventListener("dragstart", onBoardsListDragStart);
+  dom.boardsList?.addEventListener("dragover", onBoardsListDragOver);
+  dom.boardsList?.addEventListener("drop", onBoardsListDrop);
+  dom.boardsList?.addEventListener("dragend", onBoardsListDragEnd);
   dom.columnsList?.addEventListener("click", onColumnsListClick);
   dom.columnsList?.addEventListener("dragstart", onColumnsListDragStart);
   dom.columnsList?.addEventListener("dragover", onColumnsListDragOver);
@@ -1293,6 +1297,35 @@ function onMoveColumnByDrop(draggedColumnId, targetColumnId, position) {
   render();
 }
 
+function onMoveBoardByDrop(draggedBoardId, targetBoardId, position) {
+  if (!Array.isArray(state.boards)) {
+    return;
+  }
+
+  const boards = [...state.boards];
+  const fromIndex = boards.findIndex((board) => board.id === draggedBoardId);
+  const targetIndex = boards.findIndex((board) => board.id === targetBoardId);
+  if (fromIndex < 0 || targetIndex < 0 || fromIndex === targetIndex) {
+    state.draggingBoardId = null;
+    return;
+  }
+
+  const [movedBoard] = boards.splice(fromIndex, 1);
+  const targetIndexAfterRemoval = boards.findIndex((board) => board.id === targetBoardId);
+  if (targetIndexAfterRemoval < 0) {
+    boards.push(movedBoard);
+  } else if (position === "before") {
+    boards.splice(targetIndexAfterRemoval, 0, movedBoard);
+  } else {
+    boards.splice(targetIndexAfterRemoval + 1, 0, movedBoard);
+  }
+
+  state.boards = boards;
+  state.draggingBoardId = null;
+  saveBoards();
+  render();
+}
+
 function normalizeColumnKey(name) {
   return normalizeSpaces(name).toLowerCase();
 }
@@ -1514,6 +1547,9 @@ function applyBoardsPanelMode() {
   const showingColumns = state.boardsPanelMode === "columns";
   if (dom.boardsTitle) {
     dom.boardsTitle.textContent = showingColumns ? "Colunas" : "Tabelas";
+  }
+  if (dom.boardsReorderHint) {
+    dom.boardsReorderHint.hidden = false;
   }
   if (dom.boardsTablesSection) dom.boardsTablesSection.hidden = showingColumns;
   if (dom.boardsColumnsSection) dom.boardsColumnsSection.hidden = !showingColumns;
@@ -1758,6 +1794,103 @@ function onColumnsListClick(event) {
   if (action === "confirm-delete-column") {
     deleteColumn(columnId);
   }
+}
+
+function onBoardsListDragStart(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const item = target.closest(".board-item[data-board-id]");
+  if (!(item instanceof HTMLElement)) {
+    return;
+  }
+
+  const boardId = item.dataset.boardId;
+  if (!boardId) {
+    return;
+  }
+
+  if (target.closest(".board-actions") || state.editingBoardId === boardId) {
+    event.preventDefault();
+    return;
+  }
+
+  state.draggingBoardId = boardId;
+  document.body.classList.add("drag-scroll-main-only");
+  item.classList.add("board-panel-dragging");
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", `board:${boardId}`);
+  }
+}
+
+function onBoardsListDragOver(event) {
+  const draggingId = state.draggingBoardId;
+  if (!draggingId) {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const item = target.closest(".board-item[data-board-id]");
+  if (!(item instanceof HTMLElement)) {
+    return;
+  }
+
+  const targetBoardId = item.dataset.boardId;
+  if (!targetBoardId || targetBoardId === draggingId) {
+    return;
+  }
+
+  event.preventDefault();
+  clearBoardsPanelDropIndicators();
+  const rect = item.getBoundingClientRect();
+  const before = event.clientY < rect.top + rect.height / 2;
+  item.classList.add(before ? "board-panel-drop-before" : "board-panel-drop-after");
+}
+
+function onBoardsListDrop(event) {
+  const draggingId = state.draggingBoardId;
+  if (!draggingId) {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const item = target.closest(".board-item[data-board-id]");
+  if (!(item instanceof HTMLElement)) {
+    return;
+  }
+
+  const targetBoardId = item.dataset.boardId;
+  if (!targetBoardId || targetBoardId === draggingId) {
+    return;
+  }
+
+  event.preventDefault();
+  const position = item.classList.contains("board-panel-drop-before") ? "before" : "after";
+  clearBoardsPanelDropIndicators();
+  onMoveBoardByDrop(draggingId, targetBoardId, position);
+}
+
+function onBoardsListDragEnd() {
+  state.draggingBoardId = null;
+  document.body.classList.remove("drag-scroll-main-only");
+  clearBoardsPanelDropIndicators();
+}
+
+function clearBoardsPanelDropIndicators() {
+  dom.boardsList?.querySelectorAll(".board-item[data-board-id]").forEach((item) => {
+    item.classList.remove("board-panel-drop-before", "board-panel-drop-after", "board-panel-dragging");
+  });
 }
 
 function countLocalTasksAcrossBoards(boards) {
