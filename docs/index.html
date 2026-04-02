@@ -162,6 +162,7 @@
           <ul>
             <li>Dark mode / Light mode</li>
             <li>Focus mode</li>
+            <li>Ordenacao por coluna (manual, prioridade e data de inicio)</li>
             <li>Modais de gerenciamento</li>
             <li>Feedback visual para acoes criticas</li>
           </ul>
@@ -201,6 +202,7 @@
             <li>tasks(board_id)</li>
             <li>tasks(column_id)</li>
             <li>columns(board_id)</li>
+            <li>profiles(lower(username)) unique parcial</li>
           </ul>
         </section>
 
@@ -251,6 +253,10 @@
           <h2>12. Changelogs</h2>
           <p>Historico resumido com foco apenas nos marcos que mudaram a base do produto.</p>
           <ul>
+            <li><strong>2026-04-02:</strong> ordenacao passou a ser configuravel por coluna (botao <code>↑↓</code> no topo de cada coluna) com modos <code>manual</code>, <code>prioridade</code> e <code>data de inicio</code> + direcao <code>↑/↓</code>.</li>
+            <li><strong>2026-04-02:</strong> drag and drop voltou a respeitar ordem manual quando o modo de ordenacao esta em <code>manual</code>.</li>
+            <li><strong>2026-04-02:</strong> login passou a solicitar <code>username</code> no primeiro acesso (persistido em <code>profiles.username</code>) e o header exibe esse usuario no lugar de "Convidado".</li>
+            <li><strong>2026-04-02:</strong> header refinado com separadores sutis no subtitulo e status de usuario na mesma linha de contexto.</li>
             <li><strong>2026-04-02:</strong> modo foco atualizado com seletor compacto de coluna no cabecalho (menu <code>&lt;</code>/<code>v</code>), mantendo exibicao de apenas uma coluna por vez.</li>
             <li><strong>2026-04-02:</strong> no modo foco, botao de recolher coluna ocultado para reduzir ruido visual e evitar acoes desnecessarias.</li>
             <li><strong>2026-04-02:</strong> sintaxe de coluna alterada de <code>&gt;coluna</code> para <code>[coluna]</code> para melhorar compatibilidade com IA; parser, ajuda rapida e prompt oficial atualizados.</li>

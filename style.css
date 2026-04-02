@@ -159,6 +159,83 @@ body.dark {
   gap: 0.4rem;
 }
 
+.sort-wrap {
+  position: relative;
+}
+
+.sort-toggle {
+  list-style: none;
+  border: none;
+  width: 2.05rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, var(--text) 78%, var(--text-muted));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-icon-up,
+.sort-icon-down {
+  display: inline-block;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.sort-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.sort-toggle:hover {
+  background: color-mix(in srgb, var(--surface-low) 86%, var(--surface-card));
+  color: var(--text);
+}
+
+.sort-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 170px;
+  padding: 0.35rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-low));
+  border: 1px solid color-mix(in srgb, var(--line-soft) 52%, transparent);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+  display: grid;
+  gap: 0.26rem;
+  z-index: 95;
+}
+
+.sort-item {
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--text) 86%, var(--text-muted));
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 620;
+  line-height: 1.2;
+  padding: 0.38rem 0.46rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sort-item:hover,
+.sort-item.active {
+  background: color-mix(in srgb, var(--surface-low) 82%, var(--surface-card));
+  color: var(--text);
+}
+
+.sort-separator {
+  height: 1px;
+  margin: 0.1rem 0;
+  background: color-mix(in srgb, var(--line-soft) 52%, transparent);
+}
+
 #help-toggle {
   width: 2rem;
   height: 2rem;
@@ -192,12 +269,23 @@ h1 {
   margin: 0.35rem 0 0;
   font-size: 0.9rem;
   color: color-mix(in srgb, var(--text-muted) 90%, white 10%);
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.38rem;
 }
 
-.auth-status {
-  margin: 0.3rem 0 0;
-  font-size: 0.8rem;
-  color: color-mix(in srgb, var(--text-muted) 86%, white 8%);
+.subtitle-bullet {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 72%, transparent);
+  opacity: 0.75;
+}
+
+.auth-status-inline {
+  font-size: 0.88em;
+  color: color-mix(in srgb, var(--text-muted) 84%, white 8%);
 }
 
 #board-name {
@@ -561,6 +649,12 @@ body.dark #ia-generate-btn:hover {
   gap: 0.6rem;
   padding-bottom: 0.52rem;
   border-bottom: 1px solid color-mix(in srgb, var(--line-soft) 56%, transparent);
+}
+
+.column-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 body:not(.dark) .column-head {

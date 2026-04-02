@@ -114,6 +114,8 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
     ? selectedColumn
     : fallbackColumn;
   const isFocusModeOn = document.body.classList.contains("focus-mode");
+  const sortMode = state.sortModeByBoard?.[state.activeBoardId] || "manual";
+  const sortDirection = state.sortDirectionByBoard?.[state.activeBoardId] || "asc";
 
   activeColumns.forEach((column) => {
     const collapsedByBoard = state.collapsedColumnsByBoard?.[state.activeBoardId] || {};
@@ -136,6 +138,22 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
         </details>
       `
       : "";
+    const sortPickerHtml = `
+      <details class="sort-wrap">
+        <summary class="sort-toggle" aria-label="Ordenar tarefas">
+          <span class="sort-icon-up" aria-hidden="true">↑</span>
+          <span class="sort-icon-down" aria-hidden="true">↓</span>
+        </summary>
+        <div class="sort-menu">
+          <button type="button" class="sort-item${sortMode === "manual" ? " active" : ""}" data-action="sort-mode" data-sort-mode="manual">Manual</button>
+          <button type="button" class="sort-item${sortMode === "priority" ? " active" : ""}" data-action="sort-mode" data-sort-mode="priority">Prioridade</button>
+          <button type="button" class="sort-item${sortMode === "deadline" ? " active" : ""}" data-action="sort-mode" data-sort-mode="deadline">Data de início</button>
+          <div class="sort-separator"></div>
+          <button type="button" class="sort-item${sortDirection === "asc" ? " active" : ""}" data-action="sort-direction" data-sort-direction="asc">↑ Crescente</button>
+          <button type="button" class="sort-item${sortDirection === "desc" ? " active" : ""}" data-action="sort-direction" data-sort-direction="desc">↓ Decrescente</button>
+        </div>
+      </details>
+    `;
     const article = document.createElement("article");
     article.className = `column${isCollapsed ? " is-collapsed" : ""}`;
     article.dataset.column = column.id;
@@ -143,8 +161,11 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
     article.innerHTML = `
       <div class="column-head">
         <h2 class="column-title-static">${escapeHtml(column.name)}</h2>
-        ${focusPickerHtml}
-        <button type="button" class="clear-column-btn" data-action="clear-column" data-column="${column.id}">Limpar</button>
+        <div class="column-controls">
+          ${sortPickerHtml}
+          ${focusPickerHtml}
+          <button type="button" class="clear-column-btn" data-action="clear-column" data-column="${column.id}">Limpar</button>
+        </div>
       </div>
       <div class="task-list${isCollapsed ? " is-collapsed-list" : ""}" id="${column.id}-list"></div>
       <button
@@ -159,7 +180,10 @@ export function renderBoardColumns({ dom, state, tasks, activeColumns, context }
     `;
 
     const taskList = article.querySelector(".task-list");
-    const tasksInColumn = orderTasksForColumn(tasks.filter((task) => task.status === column.id));
+    const tasksInColumn = orderTasksForColumn(
+      tasks.filter((task) => task.status === column.id),
+      { mode: sortMode, direction: sortDirection },
+    );
     tasksInColumn.forEach((task) => {
       taskList.appendChild(createTaskElement(task, context));
     });

@@ -52,6 +52,49 @@ export async function signOut() {
   await supabaseClient.auth.signOut();
 }
 
+export async function fetchOwnProfile() {
+  if (!isLoggedIn()) {
+    return null;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("id,email,username")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data || null;
+}
+
+export async function saveOwnUsername(username) {
+  if (!isLoggedIn()) {
+    return { data: null, error: new Error("Usuário não autenticado") };
+  }
+
+  const normalized = String(username || "").trim();
+  const payload = {
+    id: currentUser.id,
+    email: currentUser.email || null,
+    username: normalized,
+  };
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .upsert(payload, { onConflict: "id" })
+    .select("username")
+    .single();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+}
+
 export async function pullCloudSnapshot() {
   if (!isLoggedIn()) {
     return null;

@@ -51,19 +51,34 @@ export function normalizeTasksForColumns(tasks, columns) {
     .filter((task) => Boolean(task.title));
 }
 
-export function orderTasksForColumn(columnTasks) {
-  return [...columnTasks].sort((a, b) => {
-    const weightA = a.priority === "high" ? 0 : 1;
-    const weightB = b.priority === "high" ? 0 : 1;
+export function orderTasksForColumn(columnTasks, sort = { mode: "manual", direction: "asc" }) {
+  const source = Array.isArray(columnTasks) ? [...columnTasks] : [];
+  const mode = sort?.mode || "manual";
+  const direction = sort?.direction === "desc" ? "desc" : "asc";
 
-    if (weightA !== weightB) {
-      return weightA - weightB;
-    }
+  if (mode === "manual") {
+    return source;
+  }
 
-    const timeA = getTaskCreatedAtTimestamp(a);
-    const timeB = getTaskCreatedAtTimestamp(b);
-    return timeA - timeB;
-  });
+  if (mode === "priority") {
+    return source.sort((a, b) => {
+      const weightA = a.priority === "high" ? 0 : 1;
+      const weightB = b.priority === "high" ? 0 : 1;
+      const result = weightA - weightB;
+      return direction === "desc" ? result * -1 : result;
+    });
+  }
+
+  if (mode === "deadline") {
+    return source.sort((a, b) => {
+      const timeA = getDeadlineTimestamp(a?.deadline);
+      const timeB = getDeadlineTimestamp(b?.deadline);
+      const result = timeA - timeB;
+      return direction === "desc" ? result * -1 : result;
+    });
+  }
+
+  return source;
 }
 
 export function getTaskCreatedAtTimestamp(task) {
@@ -130,4 +145,20 @@ export function lastIndexOfStatus(list, status) {
     }
   }
   return -1;
+}
+
+function getDeadlineTimestamp(deadline) {
+  if (!deadline) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const value = String(deadline).trim();
+  const match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (match) {
+    const [, dd, mm, yyyy] = match;
+    return Number(`${yyyy}${mm}${dd}`);
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
 }

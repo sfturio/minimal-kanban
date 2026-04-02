@@ -16,8 +16,13 @@
       <header class="topbar">
         <div>
           <h1>Minimal Kanban</h1>
-          <p class="subtitle">Kanban de foco e fluxo diário · <span id="board-name">Principal</span></p>
-          <p id="auth-status" class="auth-status">Convidado</p>
+          <p class="subtitle">
+            <span>Kanban de foco e fluxo diário</span>
+            <span class="subtitle-bullet" aria-hidden="true"></span>
+            <span id="auth-status" class="auth-status-inline">Convidado</span>
+            <span class="subtitle-bullet" aria-hidden="true"></span>
+            <span id="board-name">Principal</span>
+          </p>
         </div>
         <div class="header-actions">
           <button id="auth-toggle" type="button" class="auth-btn" aria-label="Abrir autenticação">Entrar</button>

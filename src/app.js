@@ -66,6 +66,8 @@ import {
   signOut,
   isLoggedIn,
   getCurrentUser,
+  fetchOwnProfile,
+  saveOwnUsername,
   pullCloudSnapshot,
   pushCloudSnapshot,
   deserializeTaskMeta,
@@ -234,16 +236,75 @@ async function handleAuthState(user) {
   if (dom.authToggleButton) {
     dom.authToggleButton.textContent = user ? "Sair" : "Entrar";
   }
-  setAuthStatus(user?.email || "Convidado");
 
   if (!user) {
+    setAuthStatus("Convidado");
     return;
   }
+
+  const username = await ensureOwnUsername();
+  setAuthStatus(username || user.email || "Convidado");
 
   const pulled = await pullCloudToLocal();
   if (!pulled) {
     await syncAllToCloud();
   }
+}
+
+async function ensureOwnUsername() {
+  let current = "";
+
+  try {
+    const profile = await fetchOwnProfile();
+    current = normalizeUsername(profile?.username || "");
+  } catch {
+    return "";
+  }
+
+  if (current) {
+    return current;
+  }
+
+  while (true) {
+    const input = window.prompt("Escolha um usuário (3-24 caracteres: letras, números, . _ -):", "");
+    if (input === null) {
+      return "";
+    }
+
+    const candidate = normalizeUsername(input);
+    if (!isValidUsername(candidate)) {
+      window.alert("Usuário inválido. Use 3-24 caracteres: letras, números, ponto, underscore ou hífen.");
+      continue;
+    }
+
+    const { data, error } = await saveOwnUsername(candidate);
+    if (!error) {
+      return normalizeUsername(data?.username || candidate);
+    }
+
+    const isConflict = String(error?.code || "") === "23505"
+      || /duplicate|unique/i.test(String(error?.message || ""));
+
+    if (isConflict) {
+      window.alert("Esse usuário já está em uso. Tente outro.");
+      continue;
+    }
+
+    window.alert("Não foi possível salvar o usuário agora.");
+    return "";
+  }
+}
+
+function normalizeUsername(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9._-]/g, "");
+}
+
+function isValidUsername(value) {
+  return /^[a-z0-9._-]{3,24}$/.test(String(value || ""));
 }
 
 function onAuthToggleClick() {
@@ -1333,6 +1394,36 @@ function onBoardClick(event) {
   }
 
   const action = actionTarget.dataset.action;
+  if (action === "sort-mode") {
+    const mode = actionTarget.dataset.sortMode;
+    if (!mode) {
+      return;
+    }
+
+    state.sortModeByBoard[state.activeBoardId] = mode;
+    const wrapper = actionTarget.closest(".sort-wrap");
+    if (wrapper instanceof HTMLDetailsElement) {
+      wrapper.open = false;
+    }
+    render();
+    return;
+  }
+
+  if (action === "sort-direction") {
+    const direction = actionTarget.dataset.sortDirection;
+    if (!direction) {
+      return;
+    }
+
+    state.sortDirectionByBoard[state.activeBoardId] = direction;
+    const wrapper = actionTarget.closest(".sort-wrap");
+    if (wrapper instanceof HTMLDetailsElement) {
+      wrapper.open = false;
+    }
+    render();
+    return;
+  }
+
   if (action === "set-focus-column") {
     const column = actionTarget.dataset.column;
     if (!column) {
@@ -1407,6 +1498,14 @@ function applyFocusTargetColumn() {
 function onDocumentClick(event) {
   if (!(event.target instanceof Element)) {
     return;
+  }
+
+  if (!event.target.closest(".sort-wrap")) {
+    document.querySelectorAll(".sort-wrap[open]").forEach((item) => {
+      if (item instanceof HTMLDetailsElement) {
+        item.open = false;
+      }
+    });
   }
 
   if (event.target.closest(".settings-wrap")) {

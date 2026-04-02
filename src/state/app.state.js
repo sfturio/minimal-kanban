@@ -16,6 +16,8 @@
   boardsPanelMode: "tables",
   collapsedColumnsByBoard: {},
   focusColumnByBoard: {},
+  sortModeByBoard: {},
+  sortDirectionByBoard: {},
 };
 
 export function getAppState() {
