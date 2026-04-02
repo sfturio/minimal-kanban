@@ -5,7 +5,7 @@ Regras:
 - Comece com verbos (criar, implementar, corrigir, adicionar)
 - Use:
   ! = alta prioridade (somente no inicio)
-  >coluna = define coluna de destino (ex: >em andamento)
+  [coluna] = define coluna de destino (ex: [em andamento])
   ( ) = categoria
   @ = responsável
   # = tags
@@ -14,7 +14,7 @@ Regras:
 - Sem explicações
 
 Exemplo:
-!>em andamento corrigir bug login @joao #backend +05-04-2026
+![em andamento] corrigir bug login @joao #backend +05-04-2026
 
 Ideia:
 `;

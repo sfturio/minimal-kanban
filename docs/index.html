@@ -138,14 +138,14 @@
             <thead><tr><th>Simbolo</th><th>Funcao</th></tr></thead>
             <tbody>
               <tr><td><code>!</code></td><td>prioridade alta (somente no inicio)</td></tr>
-              <tr><td><code>&gt;coluna</code></td><td>define a coluna de destino</td></tr>
+              <tr><td><code>[coluna]</code></td><td>define a coluna de destino</td></tr>
               <tr><td><code>(categoria)</code></td><td>categoria</td></tr>
               <tr><td><code>@responsavel</code></td><td>responsavel</td></tr>
               <tr><td><code>#tag</code></td><td>tag</td></tr>
               <tr><td><code>+data</code></td><td>data</td></tr>
             </tbody>
           </table>
-          <pre><code>!&gt;em andamento criar API (backend) @joao #node +05-04-2026</code></pre>
+          <pre><code>![em andamento] criar API (backend) @joao #node +05-04-2026</code></pre>
           <p>Resultado: coluna Em andamento, prioridade alta, categoria backend, responsavel joao, tag node, data 05-04-2026.</p>
         </section>
 
@@ -251,6 +251,8 @@
           <h2>12. Changelogs</h2>
           <p>Historico resumido com foco apenas nos marcos que mudaram a base do produto.</p>
           <ul>
+            <li><strong>2026-04-02:</strong> sintaxe de coluna alterada de <code>&gt;coluna</code> para <code>[coluna]</code> para melhorar compatibilidade com IA; parser, ajuda rapida e prompt oficial atualizados.</li>
+            <li><strong>2026-04-02:</strong> parser simplificado para priorizar <code>!</code> apenas no inicio e manter metadados (<code>@</code>, <code>#</code>, <code>+</code>) com limpeza correta do titulo.</li>
             <li><strong>2026-03-29:</strong> arquitetura frontend modularizada em ES Modules (separacao de estado, servicos, UI e features), facilitando manutencao e evolucao.</li>
             <li><strong>2026-03-29:</strong> Supabase Auth + sincronizacao cloud reativados com modelo escalavel para boards, colunas e tarefas.</li>
             <li><strong>2026-03-29:</strong> migracao de schema escalavel com RLS completo, tabelas de suporte (<code>columns</code>, <code>task_tags</code>, <code>comments</code>) e politicas por dono do board.</li>

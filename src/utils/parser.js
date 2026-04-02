@@ -1,57 +1,19 @@
 import { normalizeDeadline } from "./date.js";
 import { normalizeCategory, normalizeSpaces } from "./helpers.js";
 
-const DEFAULT_COLUMN_NAMES = ["Próximos", "Em andamento", "Concluído"];
-
-function toComparable(value) {
-  return normalizeSpaces(value).toLowerCase();
-}
-
-function buildKnownColumns(columnNames) {
-  const merged = [...DEFAULT_COLUMN_NAMES, ...(Array.isArray(columnNames) ? columnNames : [])]
-    .map((name) => normalizeSpaces(name))
-    .filter(Boolean);
-
-  const seen = new Set();
-  return merged
-    .map((name) => ({ raw: name, normalized: toComparable(name) }))
-    .filter((entry) => {
-      if (!entry.normalized || seen.has(entry.normalized)) return false;
-      seen.add(entry.normalized);
-      return true;
-    })
-    .sort((a, b) => b.normalized.length - a.normalized.length);
-}
-
-function extractColumnAndTitle(afterMarker, columnNames) {
-  const text = normalizeSpaces(afterMarker);
-  if (!text) {
-    return { columnName: null, titlePart: "" };
+function extractLeadingColumnCommand(text) {
+  const match = text.match(/^\[([^\]]+)\]\s*(.*)$/u);
+  if (!match) {
+    return { columnName: null, remainder: text };
   }
 
-  const comparable = toComparable(text);
-  const knownColumns = buildKnownColumns(columnNames);
-
-  const match = knownColumns.find((entry) => {
-    if (!comparable.startsWith(entry.normalized)) return false;
-    return comparable.length === entry.normalized.length || comparable[entry.normalized.length] === " ";
-  });
-
-  if (match) {
-    return {
-      columnName: match.raw,
-      titlePart: normalizeSpaces(text.slice(match.raw.length)),
-    };
-  }
-
-  const [firstToken, ...rest] = text.split(" ");
   return {
-    columnName: normalizeSpaces(firstToken),
-    titlePart: normalizeSpaces(rest.join(" ")),
+    columnName: normalizeSpaces(match[1]),
+    remainder: normalizeSpaces(match[2]),
   };
 }
 
-function parseTaskItem(rawText, options = {}) {
+function parseTaskItem(rawText) {
   let text = normalizeSpaces(rawText);
   if (!text) {
     return null;
@@ -65,10 +27,10 @@ function parseTaskItem(rawText, options = {}) {
     text = normalizeSpaces(text.slice(1));
   }
 
-  if (text.startsWith(">")) {
-    const extracted = extractColumnAndTitle(text.slice(1), options.columnNames);
+  if (text.startsWith("[")) {
+    const extracted = extractLeadingColumnCommand(text);
     columnName = extracted.columnName;
-    text = extracted.titlePart;
+    text = extracted.remainder;
   }
 
   const categoryMatch = text.match(/\(([^)]+)\)/);
@@ -121,10 +83,10 @@ function parseTaskItem(rawText, options = {}) {
   };
 }
 
-export function parseTasks(input, options = {}) {
+export function parseTasks(input) {
   return String(input || "")
     .split(";")
-    .map((item) => parseTaskItem(item, options))
+    .map((item) => parseTaskItem(item))
     .filter(Boolean);
 }
 
@@ -133,5 +95,5 @@ export function gerarTasksIA(text) {
 }
 
 export function getExamplePlanInput() {
-  return ">em andamento organizar sprint semanal (manhã) @joao #backend #api +06042026; !revisar fluxo de caixa (financeiro) @ana #financas #urgente +07042026; >próximos preparar campanha de leads (marketing) @bia #conteudo #social +08042026";
+  return "[em andamento] organizar sprint semanal (manha) @joao #backend #api +06042026; !revisar fluxo de caixa (financeiro) @ana #financas #urgente +07042026; [proximos] preparar campanha de leads (marketing) @bia #conteudo #social +08042026";
 }
