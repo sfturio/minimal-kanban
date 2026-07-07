@@ -656,6 +656,22 @@ function updateAuthModal() {
   dom.authSubmitButton.textContent = isSignup ? "Criar conta" : "Entrar";
 }
 
+function getAuthErrorMessage(error) {
+  const message = String(error?.message || "").trim();
+  const status = String(error?.status || "");
+  const code = String(error?.code || "");
+  const isDuplicateEmail = authMode === "signup"
+    && (
+      status === "422"
+      || /already|registered|exists|duplicate/i.test(message)
+      || /already|registered|exists|duplicate/i.test(code)
+    );
+
+  return isDuplicateEmail
+    ? "Este e-mail ja esta cadastrado. Tente entrar."
+    : message || "Nao foi possivel autenticar. Tente novamente.";
+}
+
 async function onAuthSubmit(event) {
   event?.preventDefault();
 
@@ -686,14 +702,14 @@ async function onAuthSubmit(event) {
       : await signInWithPassword(email, password);
   } catch (error) {
     if (dom.authError) {
-      dom.authError.textContent = `Erro de autenticacao: ${String(error?.message || "tente novamente")}`;
+      dom.authError.textContent = getAuthErrorMessage(error);
     }
     return;
   }
 
   if (result.error) {
     if (dom.authError) {
-      dom.authError.textContent = result.error.message;
+      dom.authError.textContent = getAuthErrorMessage(result.error);
     }
     return;
   }
