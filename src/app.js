@@ -354,7 +354,12 @@ function sanitizeUiZoom(value) {
 
 function applyUiZoom(percent) {
   const nextPercent = sanitizeUiZoom(percent);
+  const zoomRatio = nextPercent / 100;
   document.documentElement.style.fontSize = `${nextPercent}%`;
+  document.documentElement.style.setProperty("--ui-scale", String(zoomRatio));
+  document.documentElement.style.setProperty("--app-max-width", `${1280 * zoomRatio}px`);
+  document.documentElement.style.setProperty("--column-min-width", `${280 * zoomRatio}px`);
+  document.documentElement.style.setProperty("--task-empty-min-height", `${150 * zoomRatio}px`);
 
   if (dom.settingsZoomRange) {
     dom.settingsZoomRange.value = String(nextPercent);
