@@ -337,7 +337,7 @@ function sanitizeUiZoom(value) {
   if (!Number.isFinite(parsed)) {
     return 100;
   }
-  return Math.min(115, Math.max(85, parsed));
+  return Math.min(115, Math.max(50, parsed));
 }
 
 function applyUiZoom(percent) {
@@ -366,6 +366,20 @@ function onUiZoomChange(event) {
     return;
   }
   applyUiZoom(target.value);
+}
+
+function onUiZoomWheel(event) {
+  if (!event.ctrlKey) {
+    return false;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const currentPercent = dom.settingsZoomRange?.value || readString(STORAGE_KEYS.UI_ZOOM_KEY, "100");
+  const direction = event.deltaY < 0 ? 1 : -1;
+  applyUiZoom(sanitizeUiZoom(currentPercent) + direction * 5);
+  return true;
 }
 
 async function ensureOwnUsername() {
@@ -2293,6 +2307,10 @@ function onVisibilityChange() {
 
 function onAppWheel(event) {
   if (!dom.appMainScroll) {
+    return;
+  }
+
+  if (onUiZoomWheel(event)) {
     return;
   }
 
