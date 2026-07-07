@@ -262,12 +262,13 @@
           E-mail
           <input id="auth-email" type="email" placeholder="voce@email.com" autocomplete="email" required />
         </label>
-        <label>
+        <label id="auth-password-label">
           Senha
           <input id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required />
         </label>
         <p id="auth-error" class="auth-error" aria-live="polite"></p>
       </form>
+      <button id="auth-forgot-password" type="button" class="auth-forgot-password">Esqueci minha senha</button>
       <div class="auth-toggle">
         <span id="auth-toggle-text">Ainda não tem conta?</span>
         <button id="auth-mode-btn" type="button">Criar conta</button>

@@ -22,6 +22,8 @@
     authForm: document.getElementById("auth-form"),
     authEmailInput: document.getElementById("auth-email"),
     authPasswordInput: document.getElementById("auth-password"),
+    authPasswordLabel: document.getElementById("auth-password-label"),
+    authForgotPasswordButton: document.getElementById("auth-forgot-password"),
     authModeButton: document.getElementById("auth-mode-btn"),
     authToggleText: document.getElementById("auth-toggle-text"),
     authSubmitButton: document.getElementById("auth-submit-btn"),

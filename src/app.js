@@ -68,6 +68,8 @@ import {
   initAuthSession,
   signInWithPassword,
   signUpWithPassword,
+  sendPasswordResetEmail,
+  updatePassword,
   signOut,
   isLoggedIn,
   getCurrentUser,
@@ -141,6 +143,7 @@ function bindEvents() {
   dom.authModeButton?.addEventListener("click", toggleAuthMode);
   dom.authForm?.addEventListener("submit", onAuthSubmit);
   dom.authSubmitButton?.addEventListener("click", onAuthSubmit);
+  dom.authForgotPasswordButton?.addEventListener("click", onForgotPasswordClick);
   dom.authModalOverlay?.addEventListener("click", (event) => {
     if (event.target === dom.authModalOverlay) closeAuthModal();
   });
@@ -261,8 +264,8 @@ async function initAuth() {
 
   try {
     await initAuthSession({
-      onAuthChange: async (user) => {
-        await handleAuthState(user);
+      onAuthChange: async (user, event) => {
+        await handleAuthState(user, event);
       },
     });
     authSessionReady = true;
@@ -297,9 +300,18 @@ function updateChangeUsernameButtonLabel(username) {
   `;
 }
 
-async function handleAuthState(user) {
+async function handleAuthState(user, event) {
   if (dom.authToggleButton) {
     dom.authToggleButton.textContent = user ? "Sair" : "Entrar";
+  }
+
+  if (event === "PASSWORD_RECOVERY") {
+    authMode = "reset";
+    if (dom.authEmailInput && user?.email) {
+      dom.authEmailInput.value = user.email;
+    }
+    openAuthModal();
+    return;
   }
 
   if (!user) {
@@ -527,6 +539,10 @@ function closeAuthModal() {
   if (dom.authError) {
     dom.authError.textContent = "";
   }
+  if (authMode === "reset") {
+    authMode = "signin";
+    updateAuthModal();
+  }
   updatePageLock(dom);
 }
 
@@ -631,6 +647,11 @@ function onUsernameSkip() {
 }
 
 function toggleAuthMode() {
+  if (authMode === "reset") {
+    authMode = "signin";
+    updateAuthModal();
+    return;
+  }
   authMode = authMode === "signin" ? "signup" : "signin";
   updateAuthModal();
 }
@@ -647,19 +668,42 @@ function updateAuthModal() {
   }
 
   const isSignup = authMode === "signup";
-  dom.authModalTitle.textContent = isSignup ? "Criar conta" : "Entrar";
-  dom.authModalSubtitle.textContent = isSignup
+  const isReset = authMode === "reset";
+  dom.authModalTitle.textContent = isReset ? "Redefinir senha" : isSignup ? "Criar conta" : "Entrar";
+  dom.authModalSubtitle.textContent = isReset
+    ? "Digite uma nova senha para sua conta."
+    : isSignup
     ? "Crie sua conta para sincronizar suas tarefas."
     : "Acesse sua conta para sincronizar suas tarefas.";
-  dom.authToggleText.textContent = isSignup ? "J\u00e1 tem conta?" : "Ainda n\u00e3o tem conta?";
-  dom.authModeButton.textContent = isSignup ? "Entrar" : "Criar conta";
-  dom.authSubmitButton.textContent = isSignup ? "Criar conta" : "Entrar";
+  dom.authToggleText.textContent = isReset ? "Lembrou a senha?" : isSignup ? "J\u00e1 tem conta?" : "Ainda n\u00e3o tem conta?";
+  dom.authModeButton.textContent = isSignup || isReset ? "Entrar" : "Criar conta";
+  dom.authSubmitButton.textContent = isReset ? "Salvar nova senha" : isSignup ? "Criar conta" : "Entrar";
+
+  if (dom.authEmailInput) {
+    dom.authEmailInput.disabled = isReset;
+    dom.authEmailInput.required = !isReset;
+  }
+  if (dom.authPasswordInput) {
+    dom.authPasswordInput.autocomplete = isReset ? "new-password" : "current-password";
+    dom.authPasswordInput.placeholder = isReset ? "Nova senha" : "••••••••";
+  }
+  if (dom.authPasswordLabel) {
+    dom.authPasswordLabel.firstChild.textContent = isReset ? "Nova senha" : "Senha";
+  }
+  if (dom.authForgotPasswordButton) {
+    dom.authForgotPasswordButton.hidden = isSignup || isReset;
+  }
 }
 
 function getAuthErrorMessage(error) {
   const message = String(error?.message || "").trim();
   const status = String(error?.status || "");
   const code = String(error?.code || "");
+  const isInvalidEmail = /invalid.*email|email.*invalid/i.test(message)
+    || /invalid.*email|email.*invalid/i.test(code);
+  const isInvalidCredentials = /invalid.*login|login.*invalid|invalid.*credential|credential.*invalid|invalid/i.test(message)
+    || /invalid/i.test(code);
+  const isWeakPassword = /password/i.test(message) && /weak|short|least|characters|length/i.test(message);
   const isDuplicateEmail = authMode === "signup"
     && (
       status === "422"
@@ -667,17 +711,65 @@ function getAuthErrorMessage(error) {
       || /already|registered|exists|duplicate/i.test(code)
     );
 
+  if (isWeakPassword) {
+    return "A senha precisa ter pelo menos 6 caracteres.";
+  }
+  if (isInvalidEmail) {
+    return "Informe um e-mail valido.";
+  }
+  if (isInvalidCredentials) {
+    return "E-mail ou senha invalidos.";
+  }
   return isDuplicateEmail
     ? "Este e-mail ja esta cadastrado. Tente entrar."
     : message || "Nao foi possivel autenticar. Tente novamente.";
 }
 
+function getPasswordResetRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+async function onForgotPasswordClick() {
+  const email = normalizeSpaces(dom.authEmailInput?.value || "");
+
+  if (dom.authError) {
+    dom.authError.textContent = "";
+  }
+
+  if (!email) {
+    if (dom.authError) {
+      dom.authError.textContent = "Informe seu e-mail para receber o link de redefinicao.";
+    }
+    dom.authEmailInput?.focus();
+    return;
+  }
+
+  try {
+    const { error } = await sendPasswordResetEmail(email, getPasswordResetRedirectUrl());
+    if (error) {
+      if (dom.authError) {
+        dom.authError.textContent = getAuthErrorMessage(error);
+      }
+      return;
+    }
+
+    if (dom.authError) {
+      dom.authError.textContent = "Enviamos um link de redefinicao para o seu e-mail.";
+    }
+  } catch (error) {
+    if (dom.authError) {
+      dom.authError.textContent = getAuthErrorMessage(error);
+    }
+  }
+}
+
 async function onAuthSubmit(event) {
   event?.preventDefault();
 
+  const isReset = authMode === "reset";
   const email = normalizeSpaces(dom.authEmailInput?.value || "");
   const password = (dom.authPasswordInput?.value || "").trim();
-  if (!email || !password) {
+  if ((!isReset && !email) || !password) {
     return;
   }
 
@@ -697,7 +789,9 @@ async function onAuthSubmit(event) {
 
   let result;
   try {
-    result = authMode === "signup"
+    result = isReset
+      ? await updatePassword(password)
+      : authMode === "signup"
       ? await signUpWithPassword(email, password)
       : await signInWithPassword(email, password);
   } catch (error) {
@@ -714,8 +808,13 @@ async function onAuthSubmit(event) {
     return;
   }
 
-  writeString(STORAGE_KEYS.AUTH_LAST_EMAIL_KEY, email);
-  shouldPromptUsernameOnNextAuth = true;
+  if (isReset) {
+    await handleAuthState(getCurrentUser());
+  } else {
+    writeString(STORAGE_KEYS.AUTH_LAST_EMAIL_KEY, email);
+    shouldPromptUsernameOnNextAuth = true;
+  }
+  authMode = "signin";
   closeAuthModal();
 }
 

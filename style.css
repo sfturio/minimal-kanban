@@ -2010,6 +2010,22 @@ body.focus-mode .focus-column-option.active {
   text-decoration: underline;
 }
 
+.auth-forgot-password {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: color-mix(in srgb, var(--primary) 82%, var(--text));
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+  padding: 0.15rem 0 0;
+}
+
+.auth-forgot-password:hover {
+  text-decoration: underline;
+}
+
 .auth-error {
   margin: 0;
   min-height: 1.1rem;

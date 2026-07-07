@@ -31,7 +31,7 @@ export async function initAuthSession({ onAuthChange }) {
 
   client.auth.onAuthStateChange(async (_event, session) => {
     currentUser = session?.user || null;
-    await onAuthChange(currentUser);
+    await onAuthChange(currentUser, _event);
   });
 }
 
@@ -46,6 +46,18 @@ export async function signUpWithPassword(email, password) {
   const client = await initSupabaseClient();
   const result = await client.auth.signUp({ email, password });
   currentUser = result?.data?.user || result?.data?.session?.user || null;
+  return result;
+}
+
+export async function sendPasswordResetEmail(email, redirectTo) {
+  const client = await initSupabaseClient();
+  return await client.auth.resetPasswordForEmail(email, { redirectTo });
+}
+
+export async function updatePassword(password) {
+  const client = await initSupabaseClient();
+  const result = await client.auth.updateUser({ password });
+  currentUser = result?.data?.user || currentUser;
   return result;
 }
 
